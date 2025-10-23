@@ -1,4 +1,4 @@
-import unitsData from "../../data/units.json";
+import unitsData from "@/data/units.json";
 import { notFound } from "next/navigation";
 
 export default function UnitDetailPage({ params }) {
