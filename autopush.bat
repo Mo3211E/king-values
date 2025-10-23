@@ -27,7 +27,7 @@ echo ----------------------------------------
 
 :: Start local dev server
 echo Starting local development server...
-call npm run dev
+//call npm run dev
 
 :: Keep window open at end
 pause
