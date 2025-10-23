@@ -1,0 +1,3 @@
+echo "app/**" >> .eslintignore
+echo "node_modules/**" >> .eslintignore
+echo ".next/**" >> .eslintignore
