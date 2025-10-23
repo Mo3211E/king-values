@@ -49,12 +49,12 @@ export default function NavBar() {
     setBarVisible((prev) => !prev);
   };
 
-  const navItems = [
-    { href: "/", label: "Home", icon: "/icons/images.png" },
-    { href: "/units", label: "Values", icon: "/icons/Values.jpg" },
-    { href: "/trade-calculator", label: "Trade Calculator", icon: "/icons/Trade Calculator.jpg" },
-    { href: "/trade-hub", label: "Trade Hub", icon: "/icons/Trade Hub.jpg" },
-  ];
+ const navItems = [
+  { href: "/", label: "Home", icon: "/icons/home.png" },
+  { href: "/units", label: "Values", icon: "/icons/values.png" },
+  { href: "/trade-calculator", label: "Trade Calculator", icon: "/icons/trade-calculator.png" },
+  { href: "/trade-hub", label: "Trade Hub", icon: "/icons/trade-hub.png" },
+];
 
   return (
     <>
