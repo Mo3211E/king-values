@@ -50,10 +50,10 @@ export default function NavBar() {
   };
 
  const navItems = [
-  { href: "/", label: "Home", icon: "/icons/home.png" },
-  { href: "/units", label: "Values", icon: "/icons/values.png" },
-  { href: "/trade-calculator", label: "Trade Calculator", icon: "/icons/trade-calculator.png" },
-  { href: "/trade-hub", label: "Trade Hub", icon: "/icons/trade-hub.png" },
+  { href: "/", label: "Home", icon: "/icons/home.jpg" },
+  { href: "/units", label: "Values", icon: "/icons/values.jpg" },
+  { href: "/trade-calculator", label: "Trade Calculator", icon: "/icons/trade-calculator.jpg" },
+  { href: "/trade-hub", label: "Trade Hub", icon: "/icons/trade-hub.jpg" },
 ];
 
   return (
@@ -136,12 +136,15 @@ export default function NavBar() {
               }
             >
               <Image
-                src={item.icon}
-                alt={item.label + " icon"}
-                width={18}
-                height={18}
-                className="inline-block"
-              />
+  src={item.icon}
+  alt={item.label + " icon"}
+  width={24}
+  height={24}
+  unoptimized
+  priority
+  className="inline-block"
+/>
+
               <span>{item.label}</span>
             </Link>
           ))}

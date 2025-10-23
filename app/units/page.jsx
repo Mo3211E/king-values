@@ -393,16 +393,16 @@ function Chip({ label, active, onClick, gradient = false }) {
   onClick={onClick}
 >
   {label === "Units" && (
-  <Image src="/icons/units.png" alt="Units" width={18} height={18} />
+  <Image src="/icons/units.jpg" alt="Units" width={18} height={18} />
 )}
 {label === "Familiars" && (
-  <Image src="/icons/familiars.png" alt="Familiars" width={18} height={18} />
+  <Image src="/icons/familiars.jpg" alt="Familiars" width={18} height={18} />
 )}
 {label === "Skins" && (
-  <Image src="/icons/skins.png" alt="Skins" width={18} height={18} />
+  <Image src="/icons/skins.jpg" alt="Skins" width={18} height={18} />
 )}
 {label === "Robux Items" && (
-  <Image src="/icons/robux-items.png" alt="Robux Items" width={18} height={18} />
+  <Image src="/icons/robux-items.jpg" alt="Robux Items" width={18} height={18} />
 )}
 
   <span>{label}</span>
