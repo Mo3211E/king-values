@@ -51,8 +51,8 @@ export default function NavBar() {
 
   const navItems = [
     { href: "/", label: "Home", icon: "/icons/images.png" },
-    { href: "/units", label: "Values", icon: "/icons/units-navbar.jpg" },
-    { href: "/trade-calculator", label: "Trade Calculator", icon: "/icons/3099905.png" },
+    { href: "/units", label: "Values", icon: "/icons/Values.jpg" },
+    { href: "/trade-calculator", label: "Trade Calculator", icon: "/icons/Trade Calculator.jpg" },
     { href: "/trade-hub", label: "Trade Hub", icon: "/icons/Trade Hub.jpg" },
   ];
 

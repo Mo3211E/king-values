@@ -396,13 +396,13 @@ function Chip({ label, active, onClick, gradient = false }) {
     <Image src="/icons/Units.jpg" alt="Units" width={18} height={18} />
   )}
   {label === "Familiars" && (
-    <Image src="/icons/Familiars.png" alt="Familiars" width={18} height={18} />
+    <Image src="/icons/Familiars.jpg" alt="Familiars" width={18} height={18} />
   )}
   {label === "Skins" && (
-    <Image src="/icons/Skins.png" alt="Skins" width={18} height={18} />
+    <Image src="/icons/Skins.jpg" alt="Skins" width={18} height={18} />
   )}
   {label === "Robux Items" && (
-    <Image src="/icons/Robux Items.png" alt="Robux Items" width={18} height={18} />
+    <Image src="/icons/Robux Items.jpg" alt="Robux Items" width={18} height={18} />
   )}
   <span>{label}</span>
 
