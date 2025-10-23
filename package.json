@@ -5,7 +5,8 @@
   "scripts": {
   "dev": "next dev",
   "build": "next build --no-lint",
-  "start": "next start"
+  "start": "next start",
+  "autopush": "git add . && git commit -m 'auto update' && git push"
 },
   "dependencies": {
     "chart.js": "^4.5.1",

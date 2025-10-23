@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image"; // ✅ Added for icons
+import Image from "next/image";
 
 export default function NavBar() {
   const [shootingStars, setShootingStars] = useState([]);
-  const [navbarVisible, setNavbarVisible] = useState(true);
   const [scrollVisible, setScrollVisible] = useState(true);
   const [lastScroll, setLastScroll] = useState(0);
+  const [barVisible, setBarVisible] = useState(true); // 🌟 new state
 
   // 🎇 Generate randomized shooting stars
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function NavBar() {
       "linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1), rgba(255,200,230,1), rgba(255,255,255,0))",
     ];
 
-    const shootingArray = Array.from({ length: 150 }).map((_, i) => ({
+    const shootingArray = Array.from({ length: 150 }).map(() => ({
       top: `${Math.random() * 100}%`,
       left: `${Math.random() * 100}%`,
       color: colorOptions[Math.floor(Math.random() * colorOptions.length)],
@@ -29,7 +29,7 @@ export default function NavBar() {
     setShootingStars(shootingArray);
   }, []);
 
-  // 📜 Scroll listener: hides navbar on scroll down, reappears on scroll up
+  // 📜 Scroll listener: hides navbar content on scroll down, reappears on scroll up
   useEffect(() => {
     const handleScroll = () => {
       const currentScroll = window.scrollY;
@@ -44,12 +44,11 @@ export default function NavBar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScroll]);
 
-  // 🔁 Toggle navbar on button click
+  // ⮟ Toggle bar + stars
   const toggleNavbar = () => {
-    setNavbarVisible((prev) => !prev);
+    setBarVisible((prev) => !prev);
   };
 
-  // 🧭 Navigation Items (with icons)
   const navItems = [
     { href: "/", label: "Home", icon: "/icons/images.png" },
     { href: "/units", label: "Values", icon: "/icons/units-navbar.jpg" },
@@ -61,33 +60,40 @@ export default function NavBar() {
     <>
       {/* 🌌 Navbar */}
       <nav
-        className={`fixed top-0 left-0 w-full px-8 py-[0.7rem] flex items-center justify-between z-50 backdrop-blur-md overflow-hidden transition-all duration-700 ${
-          navbarVisible && scrollVisible
+        className={`fixed top-0 left-0 w-full px-8 py-[0.7rem] flex items-center justify-between z-50 overflow-hidden transition-all duration-700 ${
+          scrollVisible
             ? "opacity-100 translate-y-0"
             : "opacity-0 -translate-y-10 pointer-events-none"
         }`}
-        style={{
-          background: "rgba(10, 0, 30, 0.7)",
-          borderBottom: "1px solid rgba(220,190,255,0.3)",
-          boxShadow: "0 0 25px rgba(220,190,255,0.25)",
-        }}
       >
-        {/* ⭐ Shooting Stars */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          {shootingStars.map((s, i) => (
+        {/* ⭐ Shooting Stars + Border (toggleable) */}
+        {barVisible && (
+          <>
+            <div className="absolute inset-0 z-0 overflow-hidden">
+              {shootingStars.map((s, i) => (
+                <div
+                  key={`shoot-${i}`}
+                  className="nav-shooting-star"
+                  style={{
+                    top: s.top,
+                    left: s.left,
+                    animationDelay: s.animationDelay,
+                    animationDuration: s.animationDuration,
+                    background: s.color,
+                  }}
+                />
+              ))}
+            </div>
             <div
-              key={`shoot-${i}`}
-              className="nav-shooting-star"
+              className="absolute inset-0 z-0"
               style={{
-                top: s.top,
-                left: s.left,
-                animationDelay: s.animationDelay,
-                animationDuration: s.animationDuration,
-                background: s.color,
+                background: "rgba(10, 0, 30, 0.7)",
+                borderBottom: "1px solid rgba(220,190,255,0.3)",
+                boxShadow: "0 0 25px rgba(220,190,255,0.25)",
               }}
             />
-          ))}
-        </div>
+          </>
+        )}
 
         {/* ✨ Title */}
         <Link href="/" className="z-10 cursor-pointer select-none">
@@ -181,7 +187,7 @@ export default function NavBar() {
         `}</style>
       </nav>
 
-      {/* ⮟ Arrow Button — stays accessible even if navbar hidden */}
+      {/* ⮟ Arrow Button */}
       <div
         onClick={toggleNavbar}
         className={`fixed left-1/2 transform -translate-x-1/2 top-[0.5rem] z-50 cursor-pointer transition-all duration-700 ${
@@ -192,7 +198,7 @@ export default function NavBar() {
       >
         <div
           className={`w-9 h-9 flex items-center justify-center rounded-full border border-pink-300/50 bg-black/40 hover:bg-black/60 backdrop-blur-sm shadow-[0_0_10px_rgba(255,200,255,0.3)] transition-all duration-500 ${
-            navbarVisible ? "rotate-180" : "rotate-0"
+            barVisible ? "rotate-180" : "rotate-0"
           }`}
         >
           <span className="text-pink-200 text-lg transition-transform duration-500">
