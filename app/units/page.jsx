@@ -4,7 +4,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import unitsData from "../data/units.json";
-import * as ColorConfig from "../ColorConfig";
+import * as ColorConfig from "../colorConfig";
 import Link from "next/link";
 import UnitCard from "../components/UnitCard";
 import CompactUnitCard from "../components/CompactUnitCard";
