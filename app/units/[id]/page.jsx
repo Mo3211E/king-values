@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import unitsData from "../../data/units.json";
-import * as ColorConfig from "../colorConfig";
+import * as ColorConfig from "../../colorConfig";
 import UnitCard from "../../components/UnitCard";
 
 import {
