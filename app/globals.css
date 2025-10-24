@@ -99,3 +99,8 @@ html.scrolling {
     opacity: 1;
   }
 }
+
+.icon-clean {
+  filter: brightness(400%) contrast(150%);
+  mix-blend-mode: screen;
+}

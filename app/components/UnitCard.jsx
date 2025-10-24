@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import * as ColorConfig from "../colorConfig";
+import * as ColorConfig from "../ColorConfig";
 
 /* --------------------------- Constants & Helpers --------------------------- */
 

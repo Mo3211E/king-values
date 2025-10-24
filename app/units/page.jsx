@@ -4,7 +4,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import unitsData from "../data/units.json";
-import * as ColorConfig from "../colorConfig";
+import * as ColorConfig from "../ColorConfig";
 import Link from "next/link";
 import UnitCard from "../components/UnitCard";
 import CompactUnitCard from "../components/CompactUnitCard";
@@ -392,17 +392,49 @@ function Chip({ label, active, onClick, gradient = false }) {
   className={`chip ${active ? "active" : ""} flex items-center gap-1.5`}
   onClick={onClick}
 >
-  {label === "Units" && (
-  <Image src="/icons/units.png" alt="Units" width={24} height={24} unoptimized priority/>
+{label === "Units" && (
+  <Image
+    src="/icons/units.png"
+    alt="Units"
+    width={24}
+    height={24}
+    unoptimized
+    priority
+    className="inline-block icon-clean"
+  />
 )}
 {label === "Familiars" && (
-  <Image src="/icons/familiars.png" alt="Familiars" width={24} height= {24} unoptimized priority/>
+  <Image
+    src="/icons/familiars.png"
+    alt="Familiars"
+    width={24}
+    height={24}
+    unoptimized
+    priority
+    className="inline-block icon-clean"
+  />
 )}
 {label === "Skins" && (
-  <Image src="/icons/skins.png" alt="Skins" width={24} height={24} unoptimized priority/>
+  <Image
+    src="/icons/skins.png"
+    alt="Skins"
+    width={24}
+    height={24}
+    unoptimized
+    priority
+    className="inline-block icon-clean"
+  />
 )}
 {label === "Robux Items" && (
-  <Image src="/icons/robux-items.png" alt="Robux Items" width={24} height={24} unoptimized priority/>
+  <Image
+    src="/icons/robux-items.png"
+    alt="Robux Items"
+    width={24}
+    height={24}
+    unoptimized
+    priority
+    className="inline-block icon-clean"
+  />
 )}
 
   <span>{label}</span>

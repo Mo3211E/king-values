@@ -152,9 +152,9 @@ export default function Home() {
           }}
         >
           <p className="mt-3 font-medium">
-            <span className="text-[#f9cb9c]">Co-Owners:</span> Zog, Pop{" "}
+            <span className="text-[#f9cb9c]">Co-Owners:</span> Ekuzotia, Pery, Zog, Pop{" "}
             <br />
-            <span className="text-[#f9cb9c]">Value Team:</span> Xon, Gohary, Ekuzotia, 
+            <span className="text-[#f9cb9c]">Value Team:</span> Xon, Gohary,
             Fadi, Simple, Kegs, Exs, Awesometicklenip, Void, Mesta, Feh, Nathan, Connos, Knull, Xopt Please I need this 🥺🥺🥺
           </p>
         </div>

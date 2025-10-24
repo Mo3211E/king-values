@@ -1,6 +1,6 @@
 "use client";
 
-import * as ColorConfig from "../colorConfig";
+import * as ColorConfig from "../ColorConfig";
 
 const SHINY_GOLD = ColorConfig.SHINY_GOLD || "#efbf04";
 const CARD_BG =

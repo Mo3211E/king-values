@@ -135,15 +135,16 @@ export default function NavBar() {
                   "0 0 6px rgba(255,220,255,0.2)")
               }
             >
-              <Image
+      <Image
   src={item.icon}
   alt={item.label + " icon"}
   width={24}
   height={24}
   unoptimized
   priority
-  className="inline-block"
+  className="inline-block icon-clean"
 />
+
 
               <span>{item.label}</span>
             </Link>
