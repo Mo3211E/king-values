@@ -11,7 +11,6 @@ import CompactUnitCard from "../components/CompactUnitCard";
 import GalaxyBackground from "../components/GalaxyBackground";
 import Image from "next/image";
 
-
 /* ----------------------- Safe adapters to colorConfig ----------------------- */
 
 const SHINY_GOLD = ColorConfig.SHINY_GOLD || "#efbf04";
@@ -43,16 +42,11 @@ function tryGetTitleColor(category, rawName) {
       try {
         const result = t.two ? t.fn(category, rawName) : t.fn(rawName);
         if (typeof result === "string" && result) return result;
-      } catch { }
+      } catch {}
     }
   }
   return "#ffffff";
 }
-
-/* ------------------------------- Utilities --------------------------------- */
-
-const CARD_BG =
-  "linear-gradient(180deg, #6900afff 0%, #ffffff 50%, #6900afff 100%)";
 
 /* --------------------------------- Page ------------------------------------ */
 
@@ -62,21 +56,25 @@ export default function UnitsPage() {
   const [showNormal, setShowNormal] = useState(true);
   const [compact, setCompact] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("value");
   const [stableOnly, setStableOnly] = useState(false);
   const [showGuide, setShowGuide] = useState(true);
-
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   const unitBtnRef = useRef(null);
   const filterBtnRef = useRef(null);
 
-  useEffect(() => {
-  const timeout = setTimeout(() => setDebouncedSearch(search), 300);
-  return () => clearTimeout(timeout);
-}, [search]);
+  const processedUnits = useMemo(() => {
+    return unitsData
+      .map((u) => ({
+        ...u,
+        _value: Number(u.Value) || 0,
+        _name: String(u.Name || "").trim(),
+        _category: String(u.Category || "").trim(),
+      }))
+      .filter((u) => u._name.length > 0);
+  }, []);
 
   useEffect(() => {
     const onDoc = (e) => {
@@ -92,112 +90,122 @@ export default function UnitsPage() {
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  const items = useMemo(() => {
-    let list = [...unitsData];
+  // 🔍 Fast, non-laggy search (same logic as UnitPickerModal)
+  const filteredUnits = useMemo(() => {
+    let list = processedUnits;
 
-    if (tab !== "All") list = list.filter((u) => u.Category === tab);
+    // Search
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (u) =>
+          u._name.toLowerCase().includes(q) ||
+          (u.Justification || "").toLowerCase().includes(q) ||
+          (u.Obtainment || "").toLowerCase().includes(q)
+      );
+    }
 
-    if (debouncedSearch.trim()) {
-  const q = debouncedSearch.toLowerCase();
-  list = list.filter(
-    (u) =>
-      u.Name?.toLowerCase().includes(q) ||
-      u.Category?.toLowerCase().includes(q) ||
-      u.Justification?.toLowerCase?.().includes(q) ||
-      u.Obtainment?.toLowerCase?.().includes(q)
-  );
-}
+    // Category (tab)
+    if (tab !== "All") list = list.filter((u) => u._category === tab);
 
+    // Shiny toggle
     if (tab === "Units" || tab === "All") {
       list = list.filter((u) => {
-        if (u.Category !== "Units") return true;
-        const isShiny = u.Name?.startsWith("Shiny ");
+        const isShiny = u._name.startsWith("Shiny ");
         if (!showShiny && isShiny) return false;
         if (!showNormal && !isShiny) return false;
         return true;
       });
     }
 
+    // Stable filter
     if (stableOnly)
-      list = list.filter((u) => u.Stability?.toLowerCase?.() === "stable");
+      list = list.filter(
+        (u) => u.Stability?.toLowerCase() === "stable"
+      );
 
+    // Sort by value/demand
     if (sortBy === "demand") {
       const order = ["Very High", "High", "Medium", "Low"];
-      list.sort((a, b) => {
-        const aIdx = order.indexOf(a.Demand) ?? 99;
-        const bIdx = order.indexOf(b.Demand) ?? 99;
-        return aIdx - bIdx;
-      });
+      list = [...list].sort(
+        (a, b) => order.indexOf(a.Demand) - order.indexOf(b.Demand)
+      );
     } else {
-      list.sort((a, b) => (b.Value || 0) - (a.Value || 0));
+      list = [...list].sort((a, b) => b._value - a._value);
     }
 
     return list;
-  }, [tab, showShiny, showNormal, sortBy, stableOnly]);
+  }, [
+    processedUnits,
+    search,
+    tab,
+    showShiny,
+    showNormal,
+    sortBy,
+    stableOnly,
+  ]);
 
   return (
     <div className="relative min-h-screen w-full text-white overflow-hidden">
       <GalaxyBackground />
-
       <div className="relative z-10">
-
-
-        {/* ---------------- GUIDE SECTION ---------------- */}
-        <div
-          onClick={() => setShowGuide((prev) => !prev)}
-          className={`relative max-w-4xl mx-auto px-6 pt-10 pb-4 text-center rounded-2xl cursor-pointer transition-all duration-300
+       {/* ---------------- GUIDE SECTION ---------------- */}
+<div
+  onClick={() => setShowGuide((prev) => !prev)}
+  className={`relative max-w-4xl mx-auto px-6 pt-10 pb-4 text-center rounded-2xl cursor-pointer transition-all duration-300
     before:absolute before:-bottom-[12px] before:-left-[14px] before:-right-[14px] before:-top-[-8px]
     before:rounded-2xl before:z-[-1] before:transition-all before:duration-500
     hover:before:shadow-[0_0_45px_10px_rgba(155,100,255,0.4)]
   `}
-        >
-          {/* Header */}
-          <h2
-            className={`font-extrabold text-3xl sm:text-4xl transition-all duration-300 flex items-center justify-center gap-2 text-white hover:text-[#efbf04]`}
-          >
-            Guide
-            <span
-              className={`transition-transform duration-300 ${showGuide ? "rotate-180" : "rotate-0"
-                }`}
-            >
-              ▼
-            </span>
-          </h2>
+>
+  <h2
+    className={`font-extrabold text-3xl sm:text-4xl transition-all duration-300 flex items-center justify-center gap-2 text-white hover:text-[#efbf04]`}
+  >
+    Guide
+    <span
+      className={`transition-transform duration-300 ${
+        showGuide ? "rotate-180" : "rotate-0"
+      }`}
+    >
+      ▼
+    </span>
+  </h2>
 
-          {/* Collapsible content */}
-          <div
-            className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${showGuide ? "max-h-[800px] opacity-100 mt-4" : "max-h-0 opacity-0"
-              }`}
-          >
-            <ul className="list-disc list-inside text-left space-y-2 text-[1.5rem] leading-relaxed">
-              <li>
-                This is an approximate value list, this does NOT define trade
-                values, just gives a great idea of what everything is worth
-              </li>
-              <li>
-                Values are based on tradeable rerolls | 1 Value = 1 Tradeable RR
-              </li>
-              <li>
-                Rarities:{" "}
-                <span style={{ color: "#ffa0e4" }}>Exclusive</span> |{" "}
-                <span style={{ color: "#ff0000" }}>Secret</span> |{" "}
-                <span style={{ color: "#3c78d8" }}>Familiar</span> |{" "}
-                <span style={{ color: "#0aff69" }}>Mythic</span> |{" "}
-                <span
-                  style={{
-                    background:
-                      "linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet)",
-                    WebkitBackgroundClip: "text",
-                    color: "transparent",
-                  }}
-                >
-                  Robux Item
-                </span>{" "}
-                | Vanguard Colors are special and reflect the Vanguard unit
-              </li>
-            </ul>
-          </div>
-        </div>
+  <div
+    className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${
+      showGuide ? "max-h-[800px] opacity-100 mt-4" : "max-h-0 opacity-0"
+    }`}
+  >
+    <ul className="list-disc list-inside text-left space-y-2 text-[1.5rem] leading-relaxed">
+      <li>
+        This is an approximate value list, this does NOT define trade
+        values, just gives a great idea of what everything is worth
+      </li>
+      <li>
+        Values are based on tradeable rerolls | 1 Value = 1 Tradeable RR
+      </li>
+      <li>
+        Rarities:{" "}
+        <span style={{ color: "#ffa0e4" }}>Exclusive</span> |{" "}
+        <span style={{ color: "#ff0000" }}>Secret</span> |{" "}
+        <span style={{ color: "#3c78d8" }}>Familiar</span> |{" "}
+        <span style={{ color: "#0aff69" }}>Mythic</span> |{" "}
+        <span
+          style={{
+            background:
+              "linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet)",
+            WebkitBackgroundClip: "text",
+            color: "transparent",
+          }}
+        >
+          Robux Item
+        </span>{" "}
+        | Vanguard Colors are special and reflect the Vanguard unit
+      </li>
+    </ul>
+  </div>
+</div>
+
 
         {/* ---------------- VALUES TITLE ---------------- */}
         <div className="pt-4 pb-4 text-center">
@@ -206,25 +214,24 @@ export default function UnitsPage() {
 
         {/* ---------------- CATEGORY BAR ---------------- */}
         <div className="relative flex items-center justify-center gap-3.5 mb-8 flex-wrap">
-          {/* Search bar (same style as UnitPickerModal) */}
-<input
-  type="text"
-  value={debouncedSearch}
-  onChange={(e) => setSearch(e.target.value)}
-  placeholder="Search"
-  className="px-4 py-2 outline-none placeholder-white/70 w-[150px] sm:w-[180px] md:w-[200px]"
-  style={{
-    background:
-      "linear-gradient(145deg, rgba(35,0,70,0.9), rgba(15,0,35,0.85))",
-    color: "white",
-    border: "1px solid rgba(210,180,255,0.5)",
-    boxShadow: "0 0 10px rgba(180,120,255,0.15)",
-    borderRadius: "9999px", // same rounded look
-  }}
-/>
+          {/* Search bar (like UnitPickerModal) */}
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search"
+            className="px-4 py-2 outline-none placeholder-white/70 w-[150px] sm:w-[180px] md:w-[200px]"
+            style={{
+              background:
+                "linear-gradient(145deg, rgba(35,0,70,0.9), rgba(15,0,35,0.85))",
+              color: "white",
+              border: "1px solid rgba(210,180,255,0.5)",
+              boxShadow: "0 0 10px rgba(180,120,255,0.15)",
+              borderRadius: "9999px",
+            }}
+          />
 
           <Chip label="All" active={tab === "All"} onClick={() => setTab("All")} />
-
           <div className="relative">
             <div ref={unitBtnRef} className="inline-block">
               <Chip
@@ -285,7 +292,6 @@ export default function UnitsPage() {
             active={tab === "Robux Items"}
             onClick={() => setTab("Robux Items")}
           />
-
           <Chip
             label={compact ? "Normal View" : "Compact View"}
             active={compact}
@@ -306,12 +312,12 @@ export default function UnitsPage() {
             {filterOpen && (
               <div className="absolute left-full ml-3 -top-3 translate-y-[-50%] rounded-xl border border-white/35 bg-[linear-gradient(180deg,#111,#2a2a2a)] px-4 py-3 text-sm shadow-[0_10px_30px_rgba(0,0,0,0.5)] w-[170px] z-50">
                 <div className="font-semibold mb-1">Sort By:</div>
-
                 <label className="flex items-center gap-2 mb-1 cursor-pointer">
                   <div
                     onClick={() => setSortBy("value")}
-                    className={`w-4 h-4 rounded-full border-2 border-white flex items-center justify-center ${sortBy === "value" ? "bg-[#efbf04]" : "bg-transparent"
-                      }`}
+                    className={`w-4 h-4 rounded-full border-2 border-white flex items-center justify-center ${
+                      sortBy === "value" ? "bg-[#efbf04]" : "bg-transparent"
+                    }`}
                   >
                     {sortBy === "value" && (
                       <div className="w-2 h-2 rounded-full bg-black" />
@@ -323,8 +329,9 @@ export default function UnitsPage() {
                 <label className="flex items-center gap-2 mb-4 cursor-pointer">
                   <div
                     onClick={() => setSortBy("demand")}
-                    className={`w-4 h-4 rounded-full border-2 border-white flex items-center justify-center ${sortBy === "demand" ? "bg-[#efbf04]" : "bg-transparent"
-                      }`}
+                    className={`w-4 h-4 rounded-full border-2 border-white flex items-center justify-center ${
+                      sortBy === "demand" ? "bg-[#efbf04]" : "bg-transparent"
+                    }`}
                   >
                     {sortBy === "demand" && (
                       <div className="w-2 h-2 rounded-full bg-black" />
@@ -351,21 +358,20 @@ export default function UnitsPage() {
           </div>
         </div>
 
-        {/* OUTER grid */}
-      <div
-    className="absolute inset-0 pointer-events-none"
-    style={{
-      background:
-        "radial-gradient(circle at center, rgba(120,0,200,0.15), transparent 70%)",
-      filter: "blur(60px)",
-      zIndex: 0,
-    }}
-  />
-  <div
-    className="relative grid px-4 pb-8 z-10"
-    style={{ gridTemplateColumns: "1fr auto 1fr" }}
-  >
-          {/* INNER grid */}
+        {/* ---------------- GRID ---------------- */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(120,0,200,0.15), transparent 70%)",
+            filter: "blur(60px)",
+            zIndex: 0,
+          }}
+        />
+        <div
+          className="relative grid px-4 pb-8 z-10"
+          style={{ gridTemplateColumns: "1fr auto 1fr" }}
+        >
           <div
             className="grid gap-x-5 gap-y-6 justify-center"
             style={{
@@ -375,7 +381,7 @@ export default function UnitsPage() {
                 : "repeat(6, 215px)",
             }}
           >
-            {items.map((u) =>
+            {filteredUnits.map((u) =>
               compact ? (
                 <CompactUnitCard
                   key={`${u.Name}-${u.Category}-${u.Value}`}
@@ -396,68 +402,23 @@ export default function UnitsPage() {
   );
 }
 
-/* ----------------------------- Subcomponents ------------------------------ */
+/* ----------------------------- Chip Component ------------------------------ */
 
 function Chip({ label, active, onClick, gradient = false }) {
   return (
-<button
-  type="button"
-  className={`chip ${active ? "active" : ""} flex items-center gap-1.5`}
-  onClick={onClick}
->
-{label === "Units" && (
-  <Image
-    src="/icons/units.png"
-    alt="Units"
-    width={24}
-    height={24}
-    unoptimized
-    priority
-    className="inline-block icon-clean"
-  />
-)}
-{label === "Familiars" && (
-  <Image
-    src="/icons/familiars.png"
-    alt="Familiars"
-    width={24}
-    height={24}
-    unoptimized
-    priority
-    className="inline-block icon-clean"
-  />
-)}
-{label === "Skins" && (
-  <Image
-    src="/icons/skins.png"
-    alt="Skins"
-    width={24}
-    height={24}
-    unoptimized
-    priority
-    className="inline-block icon-clean"
-  />
-)}
-{label === "Robux Items" && (
-  <Image
-    src="/icons/robux-items.png"
-    alt="Robux Items"
-    width={24}
-    height={24}
-    unoptimized
-    priority
-    className="inline-block icon-clean"
-  />
-)}
-
-  <span>{label}</span>
-
+    <button
+      type="button"
+      className={`chip ${active ? "active" : ""} flex items-center gap-1.5`}
+      onClick={onClick}
+    >
+      <span>{label}</span>
       <style jsx>{`
         .chip {
-          background: ${gradient
-          ? "linear-gradient(180deg, #6900afff 0%, #000000ff 100%)"
-          : "linear-gradient(180deg, #111, #2f2f2f)"
-        };
+          background: ${
+            gradient
+              ? "linear-gradient(180deg, #6900afff 0%, #000000ff 100%)"
+              : "linear-gradient(180deg, #111, #2f2f2f)"
+          };
           border: 1px solid rgba(255, 255, 255, 0.35);
           color: #fff;
           border-radius: 9999px;
@@ -472,33 +433,14 @@ function Chip({ label, active, onClick, gradient = false }) {
             0 6px 20px rgba(0, 0, 0, 0.45);
         }
         .chip.active {
-          background: ${gradient
-          ? "linear-gradient(180deg, #6900afff 0%, #000000ff 100%)"
-          : "linear-gradient(180deg, #222, #101010)"
-        };
+          background: ${
+            gradient
+              ? "linear-gradient(180deg, #6900afff 0%, #000000ff 100%)"
+              : "linear-gradient(180deg, #222, #101010)"
+          };
           border-color: rgba(255, 255, 255, 0.6);
           box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.08);
         }
-          @keyframes galaxyPulse {
-  0% {
-    box-shadow: 0 0 8px rgba(200, 150, 255, 0.25),
-      0 0 16px rgba(180, 120, 255, 0.15);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(220, 180, 255, 0.45),
-      0 0 36px rgba(190, 150, 255, 0.35);
-  }
-  100% {
-    box-shadow: 0 0 8px rgba(200, 150, 255, 0.25),
-      0 0 16px rgba(180, 120, 255, 0.15);
-  }
-}
-
-input:focus {
-  animation: galaxyPulse 2.8s ease-in-out infinite;
-  outline: none;
-}
-
       `}</style>
     </button>
   );

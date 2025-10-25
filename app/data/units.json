@@ -810,6 +810,16 @@
     "Image": "https://res.cloudinary.com/dwair06ro/image/upload/v1760922977/Premium_Pass_ivekqq.webp"
   },
   {
+    "Name": "Trait Reroll",
+    "Value": 1,
+    "Category": "Robux Items",
+    "Demand": 10.0,
+    "Stability": "Stable",
+    "Obtainment": "100 Robux Single | 80 Robux if bought in bulk",
+    "Justification": "The Definition of Value",
+    "Image": "https://res.cloudinary.com/dwair06ro/image/upload/v1760923391/Trait_Reroll_uk0m9r.webp"
+  },
+  {
     "Name": "Shiny Lucy",
     "Value": 15.0,
     "Category": "Units",
