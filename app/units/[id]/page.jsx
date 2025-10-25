@@ -114,6 +114,19 @@ const unit = unitsData.find(
 
         {/* ------------------- Right: information + chart ------------------- */}
         <div className="flex-1 space-y-6">
+          {unit.InGameName && (
+  <div>
+    <h2 className="text-2xl font-bold text-[#efbf04] mb-1">In Game Name:</h2>
+    <p className="text-white/85">{unit.InGameName}</p>
+  </div>
+)}
+{unit["In Game Name"] && (
+  <div className="flex items-center flex-wrap gap-2">
+    <h2 className="text-2xl font-bold text-[#efbf04] mb-1">In Game Name:</h2>
+    <p className="text-white/85 text-2xl mb-1">{unit["In Game Name"]}</p>
+  </div>
+)}
+
           <div>
             <h2 className="text-2xl font-bold text-[#efbf04] mb-1">Obtainment:</h2>
             <p className="text-white/85">{Obtainment ?? "N/A"}</p>

@@ -95,15 +95,15 @@ export default function UnitsPage() {
     let list = processedUnits;
 
     // Search
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (u) =>
-          u._name.toLowerCase().includes(q) ||
-          (u.Justification || "").toLowerCase().includes(q) ||
-          (u.Obtainment || "").toLowerCase().includes(q)
-      );
-    }
+ if (search.trim()) {
+  const q = search.toLowerCase();
+  list = list.filter((u) =>
+    String(u._name || "").toLowerCase().includes(q) ||
+    String(u.Justification || "").toLowerCase().includes(q) ||
+    String(u.Obtainment || "").toLowerCase().includes(q) ||
+    String(u["In Game Name"] || "").toLowerCase().includes(q)
+  );
+}
 
     // Category (tab)
     if (tab !== "All") list = list.filter((u) => u._category === tab);
