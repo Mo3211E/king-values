@@ -37,8 +37,6 @@ function tryGetTitleColor(category, rawName) {
   const tries = [
     { fn: ColorConfig.getNameColor, two: true },
     { fn: ColorConfig.getNameColor, two: false },
-    { fn: ColorConfig.getDisplayNameColor, two: true },
-    { fn: ColorConfig.getDisplayNameColor, two: false },
   ];
   for (const t of tries) {
     if (typeof t.fn === "function") {
@@ -71,8 +69,14 @@ export default function UnitsPage() {
   const [showGuide, setShowGuide] = useState(true);
 
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const unitBtnRef = useRef(null);
   const filterBtnRef = useRef(null);
+
+  useEffect(() => {
+  const timeout = setTimeout(() => setDebouncedSearch(search), 300);
+  return () => clearTimeout(timeout);
+}, [search]);
 
   useEffect(() => {
     const onDoc = (e) => {
@@ -93,8 +97,8 @@ export default function UnitsPage() {
 
     if (tab !== "All") list = list.filter((u) => u.Category === tab);
 
-    if (search.trim()) {
-  const q = search.toLowerCase();
+    if (debouncedSearch.trim()) {
+  const q = debouncedSearch.toLowerCase();
   list = list.filter(
     (u) =>
       u.Name?.toLowerCase().includes(q) ||
@@ -205,7 +209,7 @@ export default function UnitsPage() {
           {/* Search bar (same style as UnitPickerModal) */}
 <input
   type="text"
-  value={search}
+  value={debouncedSearch}
   onChange={(e) => setSearch(e.target.value)}
   placeholder="Search"
   className="px-4 py-2 outline-none placeholder-white/70 w-[150px] sm:w-[180px] md:w-[200px]"
@@ -348,10 +352,19 @@ export default function UnitsPage() {
         </div>
 
         {/* OUTER grid */}
-        <div
-          className="grid px-4 pb-8"
-          style={{ gridTemplateColumns: "1fr auto 1fr" }}
-        >
+      <div
+    className="absolute inset-0 pointer-events-none"
+    style={{
+      background:
+        "radial-gradient(circle at center, rgba(120,0,200,0.15), transparent 70%)",
+      filter: "blur(60px)",
+      zIndex: 0,
+    }}
+  />
+  <div
+    className="relative grid px-4 pb-8 z-10"
+    style={{ gridTemplateColumns: "1fr auto 1fr" }}
+  >
           {/* INNER grid */}
           <div
             className="grid gap-x-5 gap-y-6 justify-center"

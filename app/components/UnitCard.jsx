@@ -197,7 +197,7 @@ export default function UnitCard({ u, compact, isLink = true, onClick }) {
   );
 
   return isLink ? (
-    <Link href={`/unit/${encodeURIComponent(Name)}`} className="block">
+    <Link href={`/units/${encodeURIComponent(Name)}`} className="block">
       {content}
     </Link>
   ) : (

@@ -100,7 +100,7 @@ export default function CompactUnitCard({ u, clickable = true }) {
 
   const encoded = encodeURIComponent(Name);
   return (
-    <a href={`/unit/${encoded}`} className="block group">
+    <a href={`/units/${encoded}`} className="block group">
       {card}
     </a>
   );

@@ -600,6 +600,26 @@
     "Image": "https://res.cloudinary.com/dwair06ro/image/upload/v1760922946/GilgameshCasual_n5dgt5.webp"
   },
   {
+    "Name": "Timika",
+    "Value": 20.0,
+    "Category": "Skins",
+    "Demand": "Ice Cold",
+    "Stability": "Stable",
+    "Obtainment": "2k Robux Bundle",
+    "Justification": "Ice Cold",
+    "Image": "https://res.cloudinary.com/dwair06ro/image/upload/v1761376424/YuruichaTimika_yrvksr.webp"
+  },
+ {
+    "Name": "Mark Variants",
+    "Value": 20.0,
+    "Category": "Skins",
+    "Demand": "Ice Cold",
+    "Stability": "Stable",
+    "Obtainment": "2k Robux Bundle",
+    "Justification": "Ice Cold",
+    "Image": "https://res.cloudinary.com/dwair06ro/image/upload/v1761376538/ConquerorBundle3_rjdjya.webp"
+  },
+  {
     "Name": "Casual Ichigo",
     "Value": 20.0,
     "Category": "Skins",

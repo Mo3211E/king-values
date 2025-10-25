@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import unitsData from "../../data/units.json";
 import * as ColorConfig from "../../colorConfig";
 import UnitCard from "../../components/UnitCard";
+import { useEffect } from "react";
 
 import {
   LineChart,
@@ -24,8 +25,6 @@ function tryGetTitleColor(category, rawName) {
   const tries = [
     { fn: ColorConfig.getNameColor, two: true },
     { fn: ColorConfig.getNameColor, two: false },
-    { fn: ColorConfig.getDisplayNameColor, two: true },
-    { fn: ColorConfig.getDisplayNameColor, two: false },
   ];
   for (const t of tries) {
     if (typeof t.fn === "function") {
@@ -57,11 +56,17 @@ function fmt(v) {
 
 /* ----------------------------- Page ----------------------------- */
 
-export default function UnitPage() {
-  const { name } = useParams();
-  const router = useRouter();
-  const decodedName = decodeURIComponent(name);
-  const unit = unitsData.find((u) => u.Name === decodedName);
+export default function UnitPage({ params }) {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+const { id } = useParams();
+const router = useRouter();
+const decodedId = decodeURIComponent(id).toLowerCase().trim();
+
+const unit = unitsData.find(
+  (u) => u.Name?.toLowerCase().trim() === decodedId
+);
 
   if (!unit) {
     return (

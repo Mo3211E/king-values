@@ -7,7 +7,7 @@ export default function GalaxyBackground() {
   const [shootingStars, setShootingStars] = useState([]);
 
   useEffect(() => {
-    const starArray = Array.from({ length: 80 }).map(() => ({
+    const starArray = Array.from({ length: window.innerWidth > 1200 ? 120 : 60 }).map(() => ({
       top: `${Math.random() * 300}%`,
       left: `${Math.random() * 100}%`,
       animationDelay: `${Math.random() * 10}s`,
@@ -22,6 +22,18 @@ export default function GalaxyBackground() {
     setStars(starArray);
     setShootingStars(shootingArray);
   }, []);
+
+  useEffect(() => {
+  const handleVisibility = () => {
+    const stars = document.querySelectorAll(".shooting-star, .star");
+    stars.forEach((el) => {
+      el.style.animationPlayState = document.hidden ? "paused" : "running";
+    });
+  };
+  document.addEventListener("visibilitychange", handleVisibility);
+  return () => document.removeEventListener("visibilitychange", handleVisibility);
+}, []);
+
 
   return (
     <div
@@ -83,6 +95,7 @@ export default function GalaxyBackground() {
           opacity: 0.6;
           border-radius: 50%;
           animation: twinkle 4s infinite ease-in-out alternate;
+          will-change: transform, opacity;
         }
 
         @keyframes twinkle {

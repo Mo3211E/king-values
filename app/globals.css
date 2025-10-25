@@ -100,41 +100,6 @@ html.scrolling {
   }
 }
 
-.icon-clean,
-.icon-clean img {
-  background: transparent !important;
-  mix-blend-mode: normal !important;
-  filter: none !important;
-  box-shadow: none !important;
-  border: none !important;
-}
-
-/* Remove wrapper span that Next.js injects */
-span:has(img.icon-clean),
-span:has(.icon-clean) {
-  background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
-}
-
-/* Remove background color inherited from nav or button containers */
-nav a img.icon-clean,
-.chip img.icon-clean,
-nav a span:has(img.icon-clean),
-button span:has(img.icon-clean) {
-  background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
-  mix-blend-mode: normal !important;
-}
-
-/* Disable gradients or backgrounds leaking under icons */
-nav a,
-.chip {
-  background-blend-mode: normal;
-}
-
-/* Make sure PNG alpha shows correctly */
-img.icon-clean {
-  image-rendering: -webkit-optimize-contrast;
+.card {
+  cursor: pointer;
 }
