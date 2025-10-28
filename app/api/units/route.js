@@ -1,48 +1,25 @@
-import { MongoClient } from "mongodb";
+import clientPromise from "../../../lib/mongodb";
+import unitsData from "../../data/units.json";
 
-const uri = process.env.MONGODB_URI;
-const dbName = process.env.MONGODB_DB;
-
-// Reuse connection across requests (important for Vercel)
-let cachedClient = null;
-let cachedDb = null;
-
-async function connectToDatabase() {
-  if (cachedClient && cachedDb) {
-    return { client: cachedClient, db: cachedDb };
-  }
-
-  if (!uri) {
-    throw new Error("Missing MONGODB_URI in environment variables");
-  }
-
-  const client = new MongoClient(uri);
-  await client.connect();
-
-  const db = client.db(dbName);
-
-  cachedClient = client;
-  cachedDb = db;
-
-  return { client, db };
-}
-
-// Handle GET /api/units
-export async function GET() {
+export async function GET(request) {
   try {
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db("avvalues");
+    const collection = db.collection("units");
 
-    const units = await db.collection("units").find({}).toArray();
+    // Try pulling from MongoDB
+    const units = await collection.find({}).toArray();
 
-    return new Response(JSON.stringify(units), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    if (!units || units.length === 0) {
+      console.warn("⚠️ No units found in MongoDB. Using local fallback.");
+      return Response.json(unitsData);
+    }
+
+    console.log(`✅ Loaded ${units.length} units from MongoDB`);
+    return Response.json(units);
   } catch (err) {
-    console.error("Error fetching units:", err);
-    return new Response(
-      JSON.stringify({ error: "Failed to fetch units" }),
-      { status: 500 }
-    );
+    console.error("❌ Error loading units from DB:", err);
+    // Fallback to local file if DB fails
+    return Response.json(unitsData);
   }
 }
