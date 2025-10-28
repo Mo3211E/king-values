@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import clientPromise from "../../lib/mongodb";
+import clientPromise from "../../../lib/mongodb";
 import leoProfanity from "leo-profanity";
 
 // --- Profanity filter setup ---

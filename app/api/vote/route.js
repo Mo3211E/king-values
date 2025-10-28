@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import clientPromise from "../../lib/mongodb";
+import clientPromise from "../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 
 // Limit in minutes between votes from the same IP for the same unit
