@@ -1,3 +1,4 @@
+/*
 import { auth } from "next-auth";
 import clientPromise from "../../../lib/mongodb";
 import { ObjectId } from "mongodb";
@@ -25,3 +26,4 @@ export async function PATCH(req) {
 
   return new Response(JSON.stringify({ matchedCount, modifiedCount }), { status: 200 });
 }
+*/

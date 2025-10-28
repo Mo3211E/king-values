@@ -155,7 +155,7 @@ export default function Home() {
             <span className="text-[#f9cb9c]">Co-Owners:</span> Me, Ekuzotia, Zog, Pop{" "}
             <br />
             <span className="text-[#f9cb9c]">Value Team:</span> Xon, Gohary,
-            Fadi, Simple, Kegs, Exs, Awesometicklenip, Void, Mesta, Feh, Nathan, Connos, Knull, Nat
+            Fadi, Simple, Kegs, Exs, Awesometicklenip, Void, Feh, Nathan, Connos, Knull, Nat, Manjiro, Mespiritan
           </p>
         </div>
 
