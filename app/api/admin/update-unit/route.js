@@ -1,5 +1,5 @@
 import { auth } from "next-auth";
-import { db } from "@/lib/mongodb";
+import clientPromise from "../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 
 // PATCH /api/admin/update-unit
