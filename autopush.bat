@@ -10,9 +10,11 @@ echo ----------------------------------------
 echo Adding, committing, and pushing changes...
 echo ----------------------------------------
 
+@echo off
+echo Redeploy triggered at %time% > last_deploy.txt
 git add .
-git commit -m "auto update"
-git push
+git commit -m "auto update at %time%"
+git push origin main
 
 if %errorlevel% neq 0 (
     echo ❌ Push failed. Check your internet or Git setup.
