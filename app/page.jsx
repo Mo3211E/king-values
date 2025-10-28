@@ -71,7 +71,7 @@ export default function Home() {
             textShadow: "0 0 20px rgba(211, 207, 255, 0.5)",
           }}
         >
-          "OFFICIAL"
+          &quot;OFFICIAL&quot;
         </p>
 
         {/* Clickable Title with Hover Glow */}
