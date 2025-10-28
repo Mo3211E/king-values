@@ -1,0 +1,107 @@
+"use client";
+
+import * as ColorConfig from "../colorConfig";
+
+const SHINY_GOLD = ColorConfig.SHINY_GOLD || "#efbf04";
+const CARD_BG =
+  "linear-gradient(180deg, #2a0040 18%, #000000ff 44%, #2a0040 67%)";
+
+export default function CompactUnitCard({ u, clickable = true }) {
+  const { Name, Category, Image, Value } = u;
+
+  const nameColor = ColorConfig.getNameColor(Category, Name);
+  const hoverColor = nameColor.startsWith("linear-gradient")
+    ? "#ffffff"
+    : nameColor;
+
+  const card = (
+    <div
+      className={`compact-card relative rounded-xl overflow-hidden flex items-center justify-center ${
+        clickable ? "cursor-pointer" : "cursor-default"
+      }`}
+      style={{
+        background: CARD_BG,
+        width: "140px",
+        height: "140px",
+        borderRadius: "1rem",
+        position: "relative",
+        ["--glow"]: hoverColor,
+        transition: "box-shadow 0.25s ease, transform 0.25s ease",
+      }}
+    >
+      {/* Image */}
+      {Image && (
+        <img
+          src={Image}
+          alt={Name}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
+
+      {/* Top blurred banner for name */}
+      <div className="absolute top-0 left-0 w-full h-[28px] bg-black/45 backdrop-blur-sm z-5" />
+      {/* Bottom blurred banner for value */}
+      <div className="absolute bottom-0 left-0 w-full h-[26px] bg-black/45 backdrop-blur-sm z-5" />
+
+      {/* Top overlay: Name */}
+      <div
+        className="absolute top-0 left-0 w-full text-center font-extrabold text-[0.9rem] px-1 pt-1 z-10"
+        style={
+          nameColor.startsWith("linear-gradient")
+            ? {
+                background: nameColor,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }
+            : { color: nameColor }
+        }
+      >
+        {Name}
+      </div>
+
+      {/* Bottom overlay: Value */}
+      <div className="absolute bottom-0 left-0 w-full text-center font-bold text-white text-[0.85rem] pb-1 z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
+        Value: {Value ? Value.toLocaleString() : "N/A"}
+      </div>
+
+      {/* Glow border */}
+      <style jsx>{`
+        .compact-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: 1rem;
+          padding: 2px;
+          background: linear-gradient(135deg, white, black, white);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+          transition: all 0.3s ease;
+        }
+
+        .compact-card:hover::before {
+          background: linear-gradient(135deg, var(--glow), black, var(--glow));
+          box-shadow: 0 0 15px var(--glow), 0 0 25px var(--glow),
+            inset 0 0 8px var(--glow);
+          filter: brightness(1.2);
+        }
+
+        .compact-card:hover {
+          transform: ${clickable ? "translateY(-2px)" : "none"};
+        }
+      `}</style>
+    </div>
+  );
+
+  // disable linking for non-clickable mode
+  if (!clickable) return card;
+
+  const encoded = encodeURIComponent(Name);
+  return (
+    <a href={`/units/${encoded}`} className="block group">
+      {card}
+    </a>
+  );
+}
