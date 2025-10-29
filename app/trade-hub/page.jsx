@@ -249,7 +249,7 @@ const [roblox, setRoblox] = useState("");
     setDiscord(value.slice(0, 32)); // 32 max for Discord
     setDiscordValid(!invalid);
   }}
-  placeholder="Discord Username"
+  placeholder="Discord Username and/or"
   maxLength={15}
   className={`w-full px-3 py-2 rounded-lg mb-3 outline-none text-white placeholder-white/60 transition-all ${
     discordValid ? "" : "border-red-500 bg-red-950/30"
@@ -367,7 +367,7 @@ const [roblox, setRoblox] = useState("");
               <div className="flex flex-col md:flex-row gap-6 mb-4">
                 <div className="flex-1">
                   <h4 className="font-semibold mb-2 text-pink-300">
-                    Your Offer
+                    Offering
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 justify-center">
                     {ad.player1.map((u, idx) => (
@@ -381,7 +381,7 @@ const [roblox, setRoblox] = useState("");
 
                 <div className="flex-1">
                   <h4 className="font-semibold mb-2 text-blue-300">
-                    Their Offer
+                    Looking For
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 justify-center">
                     {ad.player2.map((u, idx) => (

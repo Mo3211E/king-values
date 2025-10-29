@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import unitsRaw from "../data/units.json";
 import CompactUnitCard from "./CompactUnitCard";
 
@@ -10,8 +10,15 @@ function toNumber(v) {
 
 export default function UnitPickerModal({ onClose, onSelect }) {
   const [q, setQ] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("value-desc");
+
+  // debounce to prevent lag when typing
+  useEffect(() => {
+    const h = setTimeout(() => setDebouncedQ(q), 100);
+    return () => clearTimeout(h);
+  }, [q]);
 
   const isTradeHub =
     typeof window !== "undefined" &&
@@ -21,63 +28,91 @@ export default function UnitPickerModal({ onClose, onSelect }) {
     typeof window !== "undefined" &&
     window.location.pathname.toLowerCase().includes("tradecalculator");
 
-  const units = useMemo(() => {
+  /* ----------------------- Optimized unit loading ----------------------- */
+  const memoizedUnits = useMemo(() => {
     return unitsRaw
       .map((u) => ({
         ...u,
         _value: toNumber(u.Value),
         _name: String(u.Name || "").trim(),
         _category: String(u.Category || "").trim(),
+        _demand: toNumber(u.Demand),
       }))
       .filter((u) => u._name.length > 0);
   }, []);
 
   const categories = useMemo(() => {
-    const set = new Set(units.map((u) => u._category).filter(Boolean));
+    const set = new Set(memoizedUnits.map((u) => u._category).filter(Boolean));
     return ["All", ...Array.from(set)];
-  }, [units]);
+  }, [memoizedUnits]);
 
+  /* ----------------------- Optimized filtering + sorting ----------------------- */
   const filtered = useMemo(() => {
-    let list = units;
-    if (q.trim()) {
-      const ql = q.toLowerCase();
-      list = list.filter(
-        (u) =>
-          u._name.toLowerCase().includes(ql) ||
-          (u.Justification || "").toLowerCase().includes(ql) ||
-          (u.Obtainment || "").toLowerCase().includes(ql)
-      );
-    }
-    if (category !== "All") list = list.filter((u) => u._category === category);
-    if (sort === "value-desc") list = [...list].sort((a, b) => b._value - a._value);
-    else if (sort === "value-asc") list = [...list].sort((a, b) => a._value - b._value);
-    else if (sort === "name-asc") list = [...list].sort((a, b) => a._name.localeCompare(b._name));
-    else if (sort === "name-desc") list = [...list].sort((a, b) => b._name.localeCompare(a._name));
-    return list;
-  }, [units, q, category, sort]);
+    const ql = debouncedQ.trim().toLowerCase();
+    let list = memoizedUnits;
 
+    if (ql) {
+      list = list.filter((u) => {
+        const searchSpace = [
+          u._name,
+          u["In Game Name"],
+          u.InGameName,
+          u.IngameName,
+          u.inGameName,
+          u.Justification,
+          u.Obtainment,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return searchSpace.includes(ql);
+      });
+    }
+
+    if (category !== "All") list = list.filter((u) => u._category === category);
+
+    switch (sort) {
+      case "value-desc":
+        list = [...list].sort((a, b) => b._value - a._value);
+        break;
+      case "value-asc":
+        list = [...list].sort((a, b) => a._value - b._value);
+        break;
+      case "demand-desc":
+        list = [...list].sort((a, b) => toNumber(b.Demand) - toNumber(a.Demand));
+        break;
+      case "demand-asc":
+        list = [...list].sort((a, b) => toNumber(a.Demand) - toNumber(b.Demand));
+        break;
+      case "name-asc":
+        list = [...list].sort((a, b) => a._name.localeCompare(b._name));
+        break;
+      case "name-desc":
+        list = [...list].sort((a, b) => b._name.localeCompare(a._name));
+        break;
+    }
+
+    return list;
+  }, [memoizedUnits, debouncedQ, category, sort]);
+
+  /* ----------------------- Render ----------------------- */
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
       <div
-  className="relative rounded-2xl max-w-7xl w-[95vw] shadow-2xl border overflow-hidden flex flex-col"
-  style={{
-    maxHeight: isTradeCalculator
-      ? "100vh" // taller only in Trade Calculator
-      : isTradeHub
-      ? "60vh" // Trade Hub height
-      : "53vh", // default elsewhere
-    width: isTradeCalculator
-      ? "75vw"
-      : isTradeHub
-      ? "70vw"
-      : "95vw",
-    background:
-      "radial-gradient(circle at center, rgba(20,0,40,0.95) 0%, rgba(5,0,20,0.8) 60%, rgba(0,0,0,0) 100%)",
-    borderColor: "rgba(180,150,255,0.35)",
-    boxShadow: "0 0 32px rgba(200,170,255,0.25)",
-  }}
->
-
+        className="relative rounded-2xl max-w-7xl w-[95vw] shadow-2xl border overflow-hidden flex flex-col"
+        style={{
+          maxHeight: isTradeCalculator
+            ? "100vh"
+            : isTradeHub
+              ? "60vh"
+              : "53vh",
+          width: isTradeCalculator ? "75vw" : isTradeHub ? "70vw" : "95vw",
+          background:
+            "radial-gradient(circle at center, rgba(20,0,40,0.95) 0%, rgba(5,0,20,0.8) 60%, rgba(0,0,0,0) 100%)",
+          borderColor: "rgba(180,150,255,0.35)",
+          boxShadow: "0 0 32px rgba(200,170,255,0.25)",
+        }}
+      >
         {/* Header */}
         <div
           className="flex items-center justify-center px-6 py-2 border-b relative"
@@ -111,96 +146,76 @@ export default function UnitPickerModal({ onClose, onSelect }) {
           className="grid grid-cols-1 md:grid-cols-3 gap-3 px-6 py-3 border-b"
           style={{ borderColor: "rgba(180,150,255,0.25)" }}
         >
-<style jsx>{`
-  @keyframes galaxyPulse {
-    0% {
-      box-shadow: 0 0 8px rgba(200, 150, 255, 0.25),
-        0 0 16px rgba(180, 120, 255, 0.15);
-    }
-    50% {
-      box-shadow: 0 0 20px rgba(220, 180, 255, 0.45),
-        0 0 36px rgba(190, 150, 255, 0.35);
-    }
-    100% {
-      box-shadow: 0 0 8px rgba(200, 150, 255, 0.25),
-        0 0 16px rgba(180, 120, 255, 0.15);
-    }
-  }
-
-  /* Search bar stays rounded */
-  input {
-    border-radius: 9999px;
-  }
-
-  /* Dropdowns get soft box shape */
-  select {
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    background: linear-gradient(
-      145deg,
-      rgba(35, 0, 70, 0.9),
-      rgba(15, 0, 35, 0.85)
-    );
-    color: #f0e8ff;
-    border: 1px solid rgba(210, 180, 255, 0.5);
-  }
-
-  /* Pulsing glow for dropdowns and input */
-  select:focus,
-  select:hover,
-  input:focus {
-    animation: galaxyPulse 2.8s ease-in-out infinite;
-    outline: none;
-  }
-
-  /* Dropdown list styling */
-  select option {
-    background: rgba(25, 0, 50, 0.92);
-    color: #e7d4ff;
-    transition: background 0.25s ease, color 0.25s ease, box-shadow 0.3s ease;
-  }
-
-  /* Hovered options glow softly outward */
-  select option:hover,
-  select option:focus {
-    background: linear-gradient(90deg, #a66cff, #e3b7ff);
-    color: #fff;
-    box-shadow: 0 0 10px rgba(190, 150, 255, 0.4),
-      0 0 20px rgba(180, 120, 255, 0.3);
-  }
-
-  /* Active dropdown appearance */
-  select:focus {
-    background: linear-gradient(
-      145deg,
-      rgba(40, 0, 80, 0.95),
-      rgba(15, 0, 40, 0.9)
-    );
-    box-shadow: 0 0 20px rgba(200, 150, 255, 0.45);
-  }
-
-  /* Scrollbar inside dropdown */
-  select::-webkit-scrollbar {
-    width: 8px;
-  }
-  select::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #b891ff, #7a55ff);
-    border-radius: 8px;
-  }
-  select::-webkit-scrollbar-track {
-    background: rgba(25, 0, 50, 0.5);
-  }
-
-  select::-ms-expand {
-    display: none;
-  }
-
-  select:focus-visible {
-    background: rgba(30, 0, 70, 0.9);
-  }
-`}</style>
+          <style jsx>{`
+            @keyframes galaxyPulse {
+              0% {
+                box-shadow: 0 0 8px rgba(200, 150, 255, 0.25),
+                  0 0 16px rgba(180, 120, 255, 0.15);
+              }
+              50% {
+                box-shadow: 0 0 20px rgba(220, 180, 255, 0.45),
+                  0 0 36px rgba(190, 150, 255, 0.35);
+              }
+              100% {
+                box-shadow: 0 0 8px rgba(200, 150, 255, 0.25),
+                  0 0 16px rgba(180, 120, 255, 0.15);
+              }
+            }
+            input {
+              border-radius: 9999px;
+            }
+            select {
+              border-radius: 12px;
+              position: relative;
+              overflow: hidden;
+              transition: all 0.3s ease;
+              background: linear-gradient(
+                145deg,
+                rgba(35, 0, 70, 0.9),
+                rgba(15, 0, 35, 0.85)
+              );
+              color: #f0e8ff;
+              border: 1px solid rgba(210, 180, 255, 0.5);
+            }
+            select:focus,
+            select:hover,
+            input:focus {
+              animation: galaxyPulse 2.8s ease-in-out infinite;
+              outline: none;
+            }
+            select option {
+              background: rgba(25, 0, 50, 0.92);
+              color: #e7d4ff;
+            }
+            select option:hover,
+            select option:focus {
+              background: linear-gradient(90deg, #a66cff, #e3b7ff);
+              color: #fff;
+              box-shadow: 0 0 10px rgba(190, 150, 255, 0.4),
+                0 0 20px rgba(180, 120, 255, 0.3);
+            }
+            select:focus {
+              background: linear-gradient(
+                145deg,
+                rgba(40, 0, 80, 0.95),
+                rgba(15, 0, 40, 0.9)
+              );
+              box-shadow: 0 0 20px rgba(200, 150, 255, 0.45);
+            }
+            select::-webkit-scrollbar {
+              width: 8px;
+            }
+            select::-webkit-scrollbar-thumb {
+              background: linear-gradient(180deg, #b891ff, #7a55ff);
+              border-radius: 8px;
+            }
+            select::-webkit-scrollbar-track {
+              background: rgba(25, 0, 50, 0.5);
+            }
+            select::-ms-expand {
+              display: none;
+            }
+          `}</style>
 
           <input
             value={q}
@@ -215,6 +230,7 @@ export default function UnitPickerModal({ onClose, onSelect }) {
               boxShadow: "0 0 10px rgba(180,120,255,0.15)",
             }}
           />
+
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -232,6 +248,7 @@ export default function UnitPickerModal({ onClose, onSelect }) {
               </option>
             ))}
           </select>
+
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
@@ -245,21 +262,23 @@ export default function UnitPickerModal({ onClose, onSelect }) {
           >
             <option value="value-desc">Sort: Value (High → Low)</option>
             <option value="value-asc">Sort: Value (Low → High)</option>
+            <option value="demand-desc">Sort: Demand (High → Low)</option>
+            <option value="demand-asc">Sort: Demand (Low → High)</option>
             <option value="name-asc">Sort: Name (A → Z)</option>
             <option value="name-desc">Sort: Name (Z → A)</option>
           </select>
         </div>
 
         {/* Compact Grid */}
-   <div
-  className="p-6 overflow-y-auto flex-1 custom-scrollbar"
-  style={{
-    overflowX: "hidden",        // ❌ prevents horizontal scroll
-    scrollbarWidth: "thin",
-    scrollbarColor: "#b891ff rgba(40,0,80,0.4)",
-  }}
->
-
+        <div
+          className="overflow-y-auto flex-1 custom-scrollbar"
+          style={{
+            padding: "0 1.5rem 0.5rem 1 rem",
+            overflowX: "hidden",
+            scrollbarWidth: "thin",
+            scrollbarColor: "#b891ff rgba(40,0,80,0.4)",
+          }}
+        >
           <style jsx>{`
             .custom-scrollbar::-webkit-scrollbar {
               width: 8px;
@@ -272,44 +291,39 @@ export default function UnitPickerModal({ onClose, onSelect }) {
               border-radius: 8px;
               box-shadow: 0 0 6px rgba(190, 150, 255, 0.5);
             }
-            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-              background: linear-gradient(180deg, #d4b3ff, #9e6fff);
-            }
           `}</style>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-1 gap-x-4 justify-center">
-            {filtered.map((u, i) => {
-              const compactShape = {
-                Name: u._name,
-                Category: u._category,
-                Image: u.Image,
-                Value: u._value,
-              };
-              return (
-                <button
-                  key={i}
-                  onClick={() =>
-                    onSelect({
-                      ...u,
-                      Name: u._name,
-                      Category: u._category,
-                      Value: u._value,
-                    })
-                  }
-                  className="group block rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-300 hover:scale-105 transition-transform"
-                  style={{
-                    background: "transparent",
-                    transform: "scale(1.15)",
-                  }}
-                >
-                  <div className="relative">
-                    <div style={{ transform: "scale(0.75)" }}>
-                      <CompactUnitCard u={compactShape} clickable={false} />
-                    </div>
+            {filtered.slice(0, 500).map((u, i) => (
+              <button
+                key={i}
+                onClick={() =>
+                  onSelect({
+                    ...u,
+                    Name: u._name,
+                    Category: u._category,
+                    Value: u._value,
+                  })
+                }
+                className="group block rounded-xl focus:outline-none cursor-pointer transition-transform duration-200 hover:scale-105"
+                style={{
+                  background: "transparent",
+                  padding: 0,
+                  margin: 0,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  boxShadow: "none", // disables any lingering glow
+                }}
+              >
+
+                <div className="relative flex justify-center items-center">
+                  <div style={{ transform: "scale(0.85)" }}>
+                    <CompactUnitCard u={u} clickable={false} />
                   </div>
-                </button>
-              );
-            })}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </div>
