@@ -54,8 +54,18 @@ export async function POST(req) {
     const trades = db.collection("trades");
     const censored = db.collection("censored_words");
 
-    const { title, description, player1, player2, p1Total, p2Total, verdict } =
-      await req.json();
+   const {
+  title,
+  description,
+  player1,
+  player2,
+  p1Total,
+  p2Total,
+  verdict,
+  discord,
+  roblox,
+} = await req.json();
+
 
     if (!title || !description) {
       return NextResponse.json(
@@ -73,16 +83,19 @@ export async function POST(req) {
     const safeDescription = filterCensoredWords(description, bannedWords);
 
     // Create trade document
-    const newTrade = {
-      title: safeTitle,
-      description: safeDescription,
-      player1,
-      player2,
-      p1Total,
-      p2Total,
-      verdict,
-      createdAt: new Date(),
-    };
+const newTrade = {
+  title: safeTitle,
+  description: safeDescription,
+  player1,
+  player2,
+  p1Total,
+  p2Total,
+  verdict,
+  discord,
+  roblox,
+  createdAt: new Date(),
+};
+
 
     // Save to MongoDB
     await trades.insertOne(newTrade);

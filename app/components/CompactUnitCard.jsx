@@ -6,13 +6,23 @@ const SHINY_GOLD = ColorConfig.SHINY_GOLD || "#efbf04";
 const CARD_BG =
   "linear-gradient(180deg, #2a0040 18%, #000000ff 44%, #2a0040 67%)";
 
+/* --- Helper: Split shiny/base name --- */
+function splitName(raw) {
+  if (!raw) return { shiny: "", base: "", firstWord: "" };
+  const parts = raw.trim().split(/\s+/);
+  const firstWord = parts[0] || "";
+  if (raw.startsWith("Shiny ")) {
+    return { shiny: "Shiny", base: raw.slice(6).trim(), firstWord };
+  }
+  return { shiny: "", base: raw, firstWord };
+}
+
 export default function CompactUnitCard({ u, clickable = true }) {
   const { Name, Category, Image, Value } = u;
+  const { shiny, base } = splitName(Name);
 
-  const nameColor = ColorConfig.getNameColor(Category, Name);
-  const hoverColor = nameColor.startsWith("linear-gradient")
-    ? "#ffffff"
-    : nameColor;
+  const nameColor = ColorConfig.getNameColor(Category, shiny ? base : Name);
+  const hoverColor = shiny ? SHINY_GOLD : nameColor;
 
   const card = (
     <div
@@ -38,28 +48,50 @@ export default function CompactUnitCard({ u, clickable = true }) {
         />
       )}
 
-      {/* Top blurred banner for name */}
+      {/* Top blurred banner */}
       <div className="absolute top-0 left-0 w-full h-[28px] bg-black/45 backdrop-blur-sm z-5" />
-      {/* Bottom blurred banner for value */}
+      {/* Bottom blurred banner */}
       <div className="absolute bottom-0 left-0 w-full h-[26px] bg-black/45 backdrop-blur-sm z-5" />
 
-      {/* Top overlay: Name */}
+      {/* Name rendering (matches full card logic) */}
       <div
         className="absolute top-0 left-0 w-full text-center font-extrabold text-[0.9rem] px-1 pt-1 z-10"
-        style={
-          nameColor.startsWith("linear-gradient")
-            ? {
-                background: nameColor,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }
-            : { color: nameColor }
-        }
+        style={{
+          textShadow: `0 0 4px ${
+            shiny ? SHINY_GOLD : nameColor
+          }66, 0 0 10px ${shiny ? SHINY_GOLD : nameColor}40`,
+        }}
       >
-        {Name}
+        {nameColor.startsWith("linear-gradient") ? (
+          <span
+            style={{
+              background: nameColor,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              fontWeight: "800",
+            }}
+          >
+            {Name}
+          </span>
+        ) : shiny ? (
+          <>
+            <span
+              style={{
+                color: SHINY_GOLD,
+                marginRight: "0.25em",
+                textShadow: `0 0 4px ${SHINY_GOLD}80, 0 0 10px ${SHINY_GOLD}55`,
+              }}
+            >
+              Shiny
+            </span>
+            <span style={{ color: nameColor }}>{base}</span>
+          </>
+        ) : (
+          <span style={{ color: nameColor }}>{Name}</span>
+        )}
       </div>
 
-      {/* Bottom overlay: Value */}
+      {/* Value */}
       <div className="absolute bottom-0 left-0 w-full text-center font-bold text-white text-[0.85rem] pb-1 z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
         Value: {Value ? Value.toLocaleString() : "N/A"}
       </div>
@@ -95,7 +127,6 @@ export default function CompactUnitCard({ u, clickable = true }) {
     </div>
   );
 
-  // disable linking for non-clickable mode
   if (!clickable) return card;
 
   const encoded = encodeURIComponent(Name);

@@ -61,6 +61,7 @@ export default function UnitsPage() {
   const [showGuide, setShowGuide] = useState(true);
   const [search, setSearch] = useState("");
   const [unitsData, setUnitsData] = useState([]);
+  const [progress, setProgress] = useState(90); // Start at 90%
 
   const unitBtnRef = useRef(null);
   const filterBtnRef = useRef(null);
@@ -103,6 +104,13 @@ const processedUnits = useMemo(() => {
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
+
+    useEffect(() => {
+    if (!unitsData.length) {
+      const timer = setTimeout(() => setProgress(100), 800); // Smooth finish
+      return () => clearTimeout(timer);
+    }
+  }, [unitsData]);
 
   // 🔍 Fast, non-laggy search (same logic as UnitPickerModal)
   const filteredUnits = useMemo(() => {
@@ -159,11 +167,36 @@ const processedUnits = useMemo(() => {
     stableOnly,
   ]);
 
-  // 🕓 Show loading screen until units are fetched
 if (!unitsData.length) {
   return (
-    <div className="min-h-screen flex items-center justify-center text-white">
-      <h1 className="text-7xl font-bold">Loading...</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center text-white relative overflow-hidden bg-black">
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1a0034] via-[#300060] to-[#0a0015]" />
+
+      {/* Purple Stream Bar */}
+      <div className="relative w-3/4 h-2 rounded-full overflow-hidden bg-[#220042] shadow-[0_0_20px_rgba(180,100,255,0.25)]">
+        <div
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#a663ff] via-[#e3b2ff] to-[#ffffff] transition-all duration-700 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <h1 className="mt-10 text-4xl font-extrabold tracking-widest drop-shadow-[0_0_20px_rgba(200,150,255,0.8)]">
+        Loading Values...
+      </h1>
+
+      {/* Static Background Stars */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(40)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-[2px] h-[2px] bg-white rounded-full opacity-60"
+            style={{
+              top: `${(i * 97) % 100}%`,
+              left: `${(i * 43) % 100}%`,
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -255,17 +288,18 @@ if (!unitsData.length) {
           />
 
           <Chip label="All" active={tab === "All"} onClick={() => setTab("All")} />
-          <div className="relative">
-            <div ref={unitBtnRef} className="inline-block">
-              <Chip
-                label="Units"
-                active={tab === "Units"}
-                onClick={() => {
-                  setTab("Units");
-                  setMenuOpen((o) => !o);
-                }}
-              />
-            </div>
+         <div className="relative">
+  <div ref={unitBtnRef} className="inline-block">
+    <ChipWithIcon
+      icon="/icons/units.png"
+      label="Units"
+      active={tab === "Units"}
+      onClick={() => {
+        setTab("Units");
+        setMenuOpen((o) => !o);
+      }}
+    />
+  </div>
 
             {menuOpen && (
               <div className="absolute left-1/2 -translate-x-1/2 -top-2 translate-y-[-100%] rounded-xl border border-white/35 bg-[linear-gradient(180deg,#111,#2a2a2a)] px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-50">
@@ -300,27 +334,32 @@ if (!unitsData.length) {
             )}
           </div>
 
-          <Chip
-            label="Familiars"
-            active={tab === "Familiars"}
-            onClick={() => setTab("Familiars")}
-          />
-          <Chip
-            label="Skins"
-            active={tab === "Skins"}
-            onClick={() => setTab("Skins")}
-          />
-          <Chip
-            label="Robux Items"
-            active={tab === "Robux Items"}
-            onClick={() => setTab("Robux Items")}
-          />
-          <Chip
-            label={compact ? "Normal View" : "Compact View"}
-            active={compact}
-            onClick={() => setCompact((c) => !c)}
-            gradient
-          />
+<ChipWithIcon
+  icon="/icons/familiars.png"
+  label="Familiars"
+  active={tab === "Familiars"}
+  onClick={() => setTab("Familiars")}
+/>
+<ChipWithIcon
+  icon="/icons/skins.png"
+  label="Skins"
+  active={tab === "Skins"}
+  onClick={() => setTab("Skins")}
+/>
+<ChipWithIcon
+  icon="/icons/robux-items.png"
+  label="Robux Items"
+  active={tab === "Robux Items"}
+  onClick={() => setTab("Robux Items")}
+/>
+
+{/* Compact View Button (restored) */}
+<Chip
+  label={compact ? "Normal View" : "Compact View"}
+  active={compact}
+  onClick={() => setCompact((c) => !c)}
+  gradient
+/>
 
           <div className="relative">
             <div ref={filterBtnRef} className="inline-block">
@@ -465,6 +504,29 @@ function Chip({ label, active, onClick, gradient = false }) {
           box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.08);
         }
       `}</style>
+    </button>
+  );
+}
+
+/* ------------------------- CHIP WITH ICON COMPONENT ------------------------ */
+function ChipWithIcon({ icon, label, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold border transition-all duration-150 ${
+        active
+          ? "border-white bg-[linear-gradient(180deg,#222,#101010)] shadow-[0_0_10px_rgba(255,255,255,0.25)]"
+          : "border-white/40 bg-[linear-gradient(180deg,#111,#2f2f2f)]"
+      } hover:scale-[1.05]`}
+    >
+      <Image
+        src={icon}
+        alt={label}
+        width={26}
+        height={26}
+        className="select-none"
+      />
+      {label}
     </button>
   );
 }

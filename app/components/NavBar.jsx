@@ -188,6 +188,20 @@ export default function NavBar() {
             }
           }
         `}</style>
+
+        <style jsx global>{`
+  .icon-clean {
+    filter: brightness(0) invert(1); /* Makes them white */
+    opacity: 0.9;
+    transition: opacity 0.3s ease, filter 0.3s ease;
+  }
+
+  .icon-clean:hover {
+    filter: brightness(1.2) drop-shadow(0 0 6px rgba(255, 200, 255, 0.6));
+    opacity: 1;
+  }
+`}</style>
+
       </nav>
 
       {/* ⮟ Arrow Button */}

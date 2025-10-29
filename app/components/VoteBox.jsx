@@ -85,7 +85,7 @@ export default function VoteBox({ unitId }) {
         value={reason}
         onChange={(e) => setReason(e.target.value)}
         maxLength={200}
-        placeholder="Why?"
+        placeholder="Why or Why Not?"
         className="w-72 h-16 p-2 text-sm bg-transparent border border-purple-400/60 text-white rounded-md resize-none focus:ring-2 focus:ring-purple-500 focus:outline-none placeholder:text-gray-400 mb-3"
       />
 

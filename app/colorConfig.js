@@ -72,6 +72,8 @@ export const unitColors = {
   "Baddie Katakuri": "#ff0000",
   "A Pimp Named Slickback": "#ff0000",
   "Goth Ackermans": "#ff0000",
+  "Timika": "#ff0000",
+  "Mark Variants": "#ff0000",
   "Summer Rimuru": "#ff0000",
   "Final Boss": "#ff0000",
   "Ascended Nirvana": "#ff0000",
