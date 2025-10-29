@@ -2,43 +2,65 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 export default function Home() {
-  // States for FAQ flipping
+  // FAQ flipping state
   const [flipped, setFlipped] = useState([false, false, false]);
-
-  const toggleFlip = (index) => {
+  const toggleFlip = (i) =>
     setFlipped((prev) => {
-      const newFlips = [...prev];
-      newFlips[index] = !newFlips[index];
-      return newFlips;
+      const next = [...prev];
+      next[i] = !next[i];
+      return next;
     });
-  };
+
+  // ✅ Memoized stars (reduced by ~12.5% from 60 → 52)
+  const stars = useMemo(
+    () =>
+      Array.from({ length: 52 }).map((_, i) => ({
+        id: i,
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+        delay: `${Math.random() * 8}s`,
+      })),
+    []
+  );
+
+  // ✅ Memoized shooting stars (reduced by ~12.5% from 15 → 13)
+  const shootingStars = useMemo(
+    () =>
+      Array.from({ length: 13 }).map((_, i) => ({
+        id: i,
+        top: `${Math.random() * 30}%`,
+        left: `${Math.random() * 83}%`,
+        delay: `${i * 0.8 + Math.random() * 2}s`,
+      })),
+    []
+  );
 
   return (
     <div className="relative min-h-screen flex flex-col items-center text-center text-white px-6 py-16 overflow-hidden">
       {/* Galaxy Background */}
       <div
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 z-0 will-change-transform"
         style={{
           background:
             "radial-gradient(circle at 30% 50%, #150032 0%, #060016 60%, #000 100%)",
-          backgroundSize: "200% 200%",
-          animation: "galaxyShift 50s ease-in-out infinite",
+          backgroundSize: "150% 150%",
+          animation: "galaxyShift 70s ease-in-out infinite",
         }}
-      ></div>
+      />
 
       {/* Stars */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        {[...Array(60)].map((_, i) => (
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {stars.map((s) => (
           <div
-            key={i}
-            className="star"
+            key={s.id}
+            className="star will-change-opacity"
             style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`,
+              top: s.top,
+              left: s.left,
+              animationDelay: s.delay,
             }}
           />
         ))}
@@ -46,14 +68,14 @@ export default function Home() {
 
       {/* Shooting Stars */}
       <div className="absolute top-[8%] left-0 w-full h-[350px] overflow-visible z-0 pointer-events-none">
-        {[...Array(15)].map((_, i) => (
+        {shootingStars.map((s) => (
           <div
-            key={i}
-            className="shooting-star"
+            key={s.id}
+            className="shooting-star will-change-transform"
             style={{
-              top: `${Math.random() * 30}%`,
-              left: `${Math.random() * 83}%`,
-              animationDelay: `${i * 0.6 + Math.random() * 2}s`,
+              top: s.top,
+              left: s.left,
+              animationDelay: s.delay,
             }}
           />
         ))}
@@ -62,7 +84,7 @@ export default function Home() {
       {/* Main Content */}
       <div className="relative z-10 flex flex-col items-center w-full max-w-[90rem]">
         <p
-          className="text-3xl mb-2 font-semibold tracking-[8px] text-transparent bg-clip-text"
+          className="text-4xl mb-2 font-semibold tracking-[8px] text-transparent bg-clip-text"
           style={{
             backgroundImage:
               "linear-gradient(90deg, #ffffffcc, #d3cfff, #ffffffcc)",
@@ -71,13 +93,13 @@ export default function Home() {
             textShadow: "0 0 20px rgba(211, 207, 255, 0.5)",
           }}
         >
-          &quot;OFFICIAL&quot;
+          Some Word I Didn't Decide Yet
         </p>
 
-        {/* Clickable Title with Hover Glow */}
+        {/* Clickable Title */}
         <Link href="/units" passHref>
           <h1
-            className="font-extrabold text-[6rem] sm:text-[7rem] md:text-[7.5rem] leading-tight bg-clip-text text-transparent pb-4 mb-5 cursor-pointer transition-all duration-300 hover:scale-[1.02]"
+            className="font-extrabold text-[6rem] sm:text-[7rem] md:text-[7.5rem] leading-tight bg-clip-text text-transparent pb-4 mb-5 cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
             style={{
               backgroundImage:
                 "linear-gradient(90deg, #c6a4ff, #f3b5ff, #b9b4ff, #c6a4ff)",
@@ -85,15 +107,16 @@ export default function Home() {
               animation: "titleGradient 12s ease-in-out infinite",
               textShadow:
                 "0 0 40px rgba(198,164,255,0.35), 0 0 70px rgba(243,181,255,0.25)",
+              willChange: "transform, text-shadow",
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.textShadow =
-                "0 0 40px rgba(198,164,255,0.8), 0 0 80px rgba(243,181,255,0.7)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.textShadow =
-                "0 0 40px rgba(198,164,255,0.35), 0 0 70px rgba(243,181,255,0.25)";
-            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.textShadow =
+                "0 0 40px rgba(198,164,255,0.8), 0 0 80px rgba(243,181,255,0.7)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.textShadow =
+                "0 0 40px rgba(198,164,255,0.35), 0 0 70px rgba(243,181,255,0.25)")
+            }
           >
             Anime Vanguards
             <br />
@@ -165,15 +188,11 @@ export default function Home() {
           <div className="flex-1 rounded-3xl p-[2px] bg-[linear-gradient(90deg,#a18cff,#c28cff,#a1d0ff)] animate-gradientSlow">
             <div
               className="rounded-3xl bg-[#0e0e15] p-10 h-full flex flex-col justify-center items-center"
-              style={{
-                textShadow: "0 0 25px rgba(161,140,255,0.4)",
-              }}
+              style={{ textShadow: "0 0 25px rgba(161,140,255,0.4)" }}
             >
               <h2 className="font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#a18cff] to-[#c28cff]">
                 Site Features
               </h2>
-
-              {/* Template Site Features with Gradient Borders */}
               <div className="grid gap-6 w-full">
                 {[
                   {
@@ -188,18 +207,14 @@ export default function Home() {
                     title: "Stable-Only Mode",
                     desc: "Focus on cards with consistent market stability.",
                   },
-                ].map((feature, i) => (
+                ].map((f, i) => (
                   <div
                     key={i}
                     className="rounded-2xl p-[2px] bg-[linear-gradient(90deg,#a18cff,#c28cff,#a1d0ff)]"
                   >
                     <div className="rounded-2xl bg-[#131320] p-6 shadow-md h-full">
-                      <p className="font-semibold text-[#c9baff]">
-                        {feature.title}
-                      </p>
-                      <p className="text-white/60 text-[1.6rem] mt-1">
-                        {feature.desc}
-                      </p>
+                      <p className="font-semibold text-[#c9baff]">{f.title}</p>
+                      <p className="text-white/60 text-[1.6rem] mt-1">{f.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -211,9 +226,7 @@ export default function Home() {
           <div className="flex-1 rounded-3xl p-[2px] bg-[linear-gradient(90deg,#88aaff,#b088ff,#c2a8ff)] animate-gradientSlow">
             <div
               className="rounded-3xl bg-[#0e0e15] p-10 h-full flex flex-col justify-center items-center"
-              style={{
-                textShadow: "0 0 25px rgba(136,170,255,0.4)",
-              }}
+              style={{ textShadow: "0 0 25px rgba(136,170,255,0.4)" }}
             >
               <h2 className="font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#88aaff] to-[#b088ff]">
                 FAQ
@@ -221,8 +234,6 @@ export default function Home() {
               <p className="text-[1.6rem] text-white mb-8 animate-pulseGlow">
                 Click a question to reveal the answer.
               </p>
-
-              {/* Template FAQ Flip Boxes with Borders */}
               <div className="grid gap-6 w-full">
                 {[
                   {
@@ -244,8 +255,9 @@ export default function Home() {
                     onClick={() => toggleFlip(i)}
                   >
                     <div
-                      className={`faq-inner transition-transform duration-700 transform ${flipped[i] ? "rotate-y-180" : ""
-                        } h-full`}
+                      className={`faq-inner transition-transform duration-700 transform ${
+                        flipped[i] ? "rotate-y-180" : ""
+                      } h-full`}
                     >
                       <div className="faq-front absolute inset-0 bg-[#131320] rounded-2xl p-6 flex items-center justify-center text-[1.7rem] font-semibold text-[#c9baff]">
                         {item.q}
@@ -265,9 +277,7 @@ export default function Home() {
         <div className="max-w-[60rem] w-full rounded-3xl p-[2px] bg-[linear-gradient(90deg,#ff9ee6,#ffb07c,#ffe49e)] animate-gradientSlow mb-20 text-[1.8rem]">
           <div
             className="rounded-3xl bg-[#0e0e15] p-10"
-            style={{
-              textShadow: "0 0 25px rgba(255,158,230,0.4)",
-            }}
+            style={{ textShadow: "0 0 25px rgba(255,158,230,0.4)" }}
           >
             <h2 className="font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#ff9ee6] to-[#ffb07c]">
               Join our Discord
@@ -285,9 +295,7 @@ export default function Home() {
         <div className="max-w-[70rem] w-full rounded-3xl p-[2px] bg-[linear-gradient(90deg,#ffe49e,#ffb07c,#ff9ee6)] animate-gradientSlow text-[1.8rem] mb-10">
           <div
             className="rounded-3xl bg-[#0e0e15] p-8"
-            style={{
-              textShadow: "0 0 25px rgba(255,228,158,0.3)",
-            }}
+            style={{ textShadow: "0 0 25px rgba(255,228,158,0.3)" }}
           >
             <p className="leading-relaxed text-white/80">
               For other AV inquiries, like Overall Tierlist, DPS Comparison
@@ -308,39 +316,33 @@ export default function Home() {
 
       {/* CSS Animations */}
       <style jsx global>{`
-        @keyframes titleGradient {
-          0% {
+        @keyframes galaxyShift {
+          0%,
+          100% {
             background-position: 0% 50%;
           }
           50% {
             background-position: 100% 50%;
           }
+        }
+
+        @keyframes titleGradient {
+          0%,
           100% {
             background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
           }
         }
 
         @keyframes subtitleSweep {
-          0% {
+          0%,
+          100% {
             background-position: 0% 50%;
           }
           50% {
             background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
-        }
-
-        @keyframes galaxyShift {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
           }
         }
 
@@ -365,15 +367,15 @@ export default function Home() {
           background: white;
           opacity: 0.6;
           border-radius: 50%;
-          animation: twinkle 4s infinite ease-in-out alternate;
+          animation: twinkle 5s infinite alternate;
         }
 
         @keyframes twinkle {
           0% {
-            opacity: 0.2;
+            opacity: 0.3;
           }
           100% {
-            opacity: 0.8;
+            opacity: 0.9;
           }
         }
 
@@ -388,10 +390,8 @@ export default function Home() {
             rgba(160, 120, 255, 0.6) 60%,
             rgba(255, 120, 200, 0) 100%
           );
-          filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
           opacity: 0;
-          animation: diagonalShoot 3s ease-out infinite,
-            shimmer 1.5s ease-in-out infinite;
+          animation: diagonalShoot 5s ease-out infinite;
         }
 
         @keyframes diagonalShoot {
@@ -402,29 +402,13 @@ export default function Home() {
           5% {
             opacity: 1;
           }
-          50% {
-            transform: translate(150px, 150px) rotate(45deg) scaleX(0.5);
-            opacity: 0.8;
-          }
-          80% {
-            transform: translate(250px, 250px) rotate(45deg) scaleX(0.15);
-            opacity: 0.3;
+          60% {
+            transform: translate(250px, 250px) rotate(45deg) scaleX(0.3);
+            opacity: 0.5;
           }
           100% {
             transform: translate(450px, 450px) rotate(45deg) scaleX(0);
             opacity: 0;
-          }
-        }
-
-        @keyframes shimmer {
-          0%,
-          100% {
-            filter: brightness(1)
-              drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
-          }
-          50% {
-            filter: brightness(1.3)
-              drop-shadow(0 0 12px rgba(255, 255, 255, 0.9));
           }
         }
 
@@ -433,19 +417,19 @@ export default function Home() {
           background-size: 300% 300%;
         }
 
-        /* Flip card styling */
         .perspective {
           perspective: 1000px;
         }
         .faq-inner {
           transform-style: preserve-3d;
-        }
-        .rotate-y-180 {
-          transform: rotateY(180deg);
+          will-change: transform;
         }
         .faq-front,
         .faq-back {
           backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+          transform: rotateY(180deg);
         }
       `}</style>
     </div>
