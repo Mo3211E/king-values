@@ -86,6 +86,10 @@ export default function UnitsPage() {
   }, [unitsData]);
 
   useEffect(() => {
+  if (window.innerWidth <= 768) setCompact(true);
+}, []);
+
+  useEffect(() => {
     async function fetchUnits() {
       try {
         const res = await fetch("/api/units");
@@ -274,7 +278,7 @@ export default function UnitsPage() {
         </div>
 
         {/* ---------------- CATEGORY BAR ---------------- */}
-        <div className="relative flex items-center justify-center gap-3.5 mb-8 flex-wrap">
+        <div className="relative category-bar flex items-center justify-center gap-3.5 mb-8 flex-wrap">
           {/* Search bar (like UnitPickerModal) */}
           <input
             type="text"
@@ -437,21 +441,20 @@ export default function UnitsPage() {
           className="relative grid px-4 pb-8 z-10"
           style={{ gridTemplateColumns: "1fr auto 1fr" }}
         >
- <div
-  className={`grid ${isMobile ? "gap-x-2 gap-y-3" : "gap-x-5 gap-y-6"} justify-center`}
+<div
+  className={`grid justify-center ${isMobile ? "mobile-grid" : ""}`}
   style={{
     gridColumn: "2 / 3",
+    gap: isMobile ? "10px" : "20px",
     gridTemplateColumns: isMobile
-      ? (compact
-          ? "repeat(auto-fit, minmax(70px, 1fr))"
-          : "repeat(auto-fit, minmax(85px, 1fr))") // 👈 fits 4–5 cards per row
-      : (compact
-          ? "repeat(9, 140px)"
-          : "repeat(6, 215px)"),
+      ? "repeat(auto-fit, minmax(75px, 1fr))" // 👈 allows 4–5 cards per row
+      : compact
+      ? "repeat(9, 140px)"
+      : "repeat(6, 215px)",
     justifyItems: "center",
+    alignItems: "start",
   }}
 >
-
             {filteredUnits.map((u) =>
               compact ? (
                 <CompactUnitCard
@@ -538,8 +541,9 @@ function ChipWithIcon({ icon, label, active, onClick }) {
 }
 
 <style jsx global>{`
+    /* 🌙 Mobile-specific redesign */
   @media (max-width: 768px) {
-    /* Smaller card scaling for 4–5 per row */
+    /* Auto-compact scaling */
     .unit-card,
     .compact-unit-card {
       transform: scale(0.72);
@@ -547,29 +551,65 @@ function ChipWithIcon({ icon, label, active, onClick }) {
       margin: 0 auto;
     }
 
-    /* Slightly reduce chip and search UI size */
+    /* Grid appearance */
+    .mobile-grid {
+      width: 100%;
+      max-width: 95vw;
+      margin: 0 auto;
+      display: grid;
+      justify-items: center;
+      align-items: start;
+      grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+      gap: 10px;
+      padding-bottom: 30px;
+    }
+
+    /* Category bar wrapping */
+    .category-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px 8px;
+      margin-bottom: 1rem;
+    }
+
     .chip {
+      flex: 1 1 auto;
+      text-align: center;
+      min-width: 85px;
+      max-width: 130px;
       padding: 0.25rem 0.55rem;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
 
     input[type="text"] {
-      width: 120px !important;
+      width: 110px !important;
       font-size: 0.9rem;
     }
 
-    /* Reduce vertical spacing between sections */
     h1, h2 {
       margin-top: 0.5rem;
       margin-bottom: 0.5rem;
+      font-size: 1.2rem;
     }
 
-    /* Ensure grid centers cleanly */
     .grid {
       justify-items: center;
       align-content: start;
     }
+
+    .unit-card,
+    .compact-unit-card {
+      border-radius: 10px !important;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .unit-card:hover,
+    .compact-unit-card:hover {
+      box-shadow: none !important;
+    }
   }
 `}</style>
+
 
 
