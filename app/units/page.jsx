@@ -437,19 +437,20 @@ export default function UnitsPage() {
           className="relative grid px-4 pb-8 z-10"
           style={{ gridTemplateColumns: "1fr auto 1fr" }}
         >
-          <div
-            className={`grid ${isMobile ? "gap-x-2 gap-y-3" : "gap-x-5 gap-y-6"} justify-center`}
-            style={{
-              gridColumn: "2 / 3",
-              gridTemplateColumns: isMobile
-                ? (compact
-                  ? "repeat(auto-fit, minmax(120px, 1fr))"   // compact on phones
-                  : "repeat(auto-fit, minmax(180px, 1fr))")  // normal on phones
-                : (compact
-                  ? "repeat(9, 140px)"  // <-- your original desktop
-                  : "repeat(6, 215px)"),// <-- your original desktop
-            }}
-          >
+ <div
+  className={`grid ${isMobile ? "gap-x-2 gap-y-3" : "gap-x-5 gap-y-6"} justify-center`}
+  style={{
+    gridColumn: "2 / 3",
+    gridTemplateColumns: isMobile
+      ? (compact
+          ? "repeat(auto-fit, minmax(70px, 1fr))"
+          : "repeat(auto-fit, minmax(85px, 1fr))") // 👈 fits 4–5 cards per row
+      : (compact
+          ? "repeat(9, 140px)"
+          : "repeat(6, 215px)"),
+    justifyItems: "center",
+  }}
+>
 
             {filteredUnits.map((u) =>
               compact ? (
@@ -538,15 +539,37 @@ function ChipWithIcon({ icon, label, active, onClick }) {
 
 <style jsx global>{`
   @media (max-width: 768px) {
+    /* Smaller card scaling for 4–5 per row */
     .unit-card,
-    .compact-unit-card { 
-      transform: scale(0.96);
+    .compact-unit-card {
+      transform: scale(0.72);
       transform-origin: top center;
+      margin: 0 auto;
     }
-    /* slightly smaller chip padding on phones */
-    .chip { 
-      padding: 0.3rem 0.7rem; 
-      font-size: 0.9rem; 
+
+    /* Slightly reduce chip and search UI size */
+    .chip {
+      padding: 0.25rem 0.55rem;
+      font-size: 0.85rem;
+    }
+
+    input[type="text"] {
+      width: 120px !important;
+      font-size: 0.9rem;
+    }
+
+    /* Reduce vertical spacing between sections */
+    h1, h2 {
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Ensure grid centers cleanly */
+    .grid {
+      justify-items: center;
+      align-content: start;
     }
   }
 `}</style>
+
+
