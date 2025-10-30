@@ -1,28 +1,23 @@
 import { NextResponse } from "next/server";
-import clientPromise from "../../../lib/mongodb";
-import leoProfanity from "leo-profanity";
+import clientPromise from "../../../lib/mongodb.js";
 
-// --- Profanity filter setup ---
-leoProfanity.add(leoProfanity.getDictionary("en"));
-function filterCensoredWords(text, bannedWords) {
-  if (!text) return text;
+/* ----------------------- SETTINGS ----------------------- */
+// Optional admin key for secure access (set in .env.local)
+const ADMIN_KEY = process.env.ADMIN_KEY || "default-key";
 
-  // Apply automatic profanity filter first
-  let filtered = leoProfanity.clean(text);
+// Hard rate limit per user/IP (to stop spam)
+const MAX_TRADES_PER_MINUTE = 5;
 
-  // Apply custom banned words from MongoDB
-  for (const word of bannedWords) {
-    const regex = new RegExp(`\\b${word}\\b`, "gi");
-    filtered = filtered.replace(regex, "***");
-  }
-  return filtered;
-}
+// Database and collection names
+const DB_NAME = "avvalues";
+const COLLECTION = "trades";
 
+/* ----------------------- GET ----------------------- */
 export async function GET(req) {
   try {
     const client = await clientPromise;
-    const db = client.db("avvalues");
-    const trades = db.collection("trades");
+    const db = client.db(DB_NAME);
+    const trades = db.collection(COLLECTION);
 
     const { search } = Object.fromEntries(req.nextUrl.searchParams);
     const query = search
@@ -34,97 +29,127 @@ export async function GET(req) {
         }
       : {};
 
+    // Lightweight projection for performance
+    const projection = {
+      title: 1,
+      description: 1,
+      verdict: 1,
+      p1Total: 1,
+      p2Total: 1,
+      discord: 1,
+      roblox: 1,
+      createdAt: 1,
+    };
+
     const results = await trades
-      .find(query)
+      .find(query, { projection })
       .sort({ createdAt: -1 })
-      .limit(200)
+      .limit(100)
       .toArray();
 
     return NextResponse.json({ success: true, results });
   } catch (err) {
-    console.error("Fetch trades error:", err);
+    console.error("GET /api/trades error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
+/* ----------------------- POST ----------------------- */
 export async function POST(req) {
   try {
     const client = await clientPromise;
-    const db = client.db("avvalues");
-    const trades = db.collection("trades");
-    const censored = db.collection("censored_words");
+    const db = client.db(DB_NAME);
+    const trades = db.collection(COLLECTION);
 
-   const {
-  title,
-  description,
-  player1,
-  player2,
-  p1Total,
-  p2Total,
-  verdict,
-  discord,
-  roblox,
-} = await req.json();
+    // Optional admin key check for security
+    const key = req.headers.get("x-admin-key");
+    if (ADMIN_KEY && key !== ADMIN_KEY) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
 
+    const body = await req.json();
+    const { title, description, player1, player2, discord, roblox } = body;
 
-    if (!title || !description) {
+    // 🧱 Validate required fields
+    if (
+      (!title || typeof title !== "string" || title.trim().length < 3) &&
+      (!player1?.length || !player2?.length)
+    ) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Invalid trade. Title or valid players required." },
         { status: 400 }
       );
     }
 
-    // Load banned words from MongoDB
-    const banned = await censored.find({}).toArray();
-    const bannedWords = banned.map((w) => w.word.toLowerCase());
+    // 🧱 Enforce rate limit by IP
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+    const rateKey = `rate:${ip}`;
+    const rateCollection = db.collection("rate_limits");
 
-    // Apply filters
-    const safeTitle = filterCensoredWords(title, bannedWords);
-    const safeDescription = filterCensoredWords(description, bannedWords);
+    const now = Date.now();
+    const windowMs = 60 * 1000; // 1 minute
+    const cutoff = now - windowMs;
 
-    // Create trade document
-const newTrade = {
-  title: safeTitle,
-  description: safeDescription,
-  player1,
-  player2,
-  p1Total,
-  p2Total,
-  verdict,
-  discord,
-  roblox,
-  createdAt: new Date(),
-};
+    // Remove expired rate limit entries
+    await rateCollection.deleteMany({ ip, timestamp: { $lt: cutoff } });
 
+    const recentPosts = await rateCollection.countDocuments({ ip });
+    if (recentPosts >= MAX_TRADES_PER_MINUTE) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Try again in a minute." },
+        { status: 429 }
+      );
+    }
 
-    // Save to MongoDB
-    await trades.insertOne(newTrade);
+    // Record this post
+    await rateCollection.insertOne({ ip, timestamp: now });
 
-    return NextResponse.json({ success: true, trade: newTrade });
+    // 🧱 Check for duplicates (title + description)
+    const duplicate = await trades.findOne({ title, description });
+    if (duplicate) {
+      return NextResponse.json(
+        { error: "Duplicate trade already exists." },
+        { status: 409 }
+      );
+    }
+
+    // 🧱 Insert trade
+    const result = await trades.insertOne({
+      title: title.trim(),
+      description: description?.trim() || "",
+      player1: player1 || [],
+      player2: player2 || [],
+      discord: discord?.trim() || "",
+      roblox: roblox?.trim() || "",
+      createdAt: new Date(),
+    });
+
+    return NextResponse.json({ success: true, insertedId: result.insertedId });
   } catch (err) {
-    console.error("Post trade error:", err);
+    console.error("POST /api/trades error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
+/* ----------------------- DELETE ----------------------- */
 export async function DELETE(req) {
   try {
     const key = req.headers.get("x-admin-key");
-    if (key !== process.env.ADMIN_KEY) {
+    if (ADMIN_KEY && key !== ADMIN_KEY) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     const client = await clientPromise;
-    const db = client.db("avvalues");
-    const trades = db.collection("trades");
+    const db = client.db(DB_NAME);
+    const trades = db.collection(COLLECTION);
 
     const result = await trades.deleteMany({});
     return NextResponse.json({
       success: true,
-      message: `Deleted ${result.deletedCount} trades.`,
+      deleted: result.deletedCount,
     });
   } catch (err) {
-    console.error("Clear trades error:", err);
+    console.error("DELETE /api/trades error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

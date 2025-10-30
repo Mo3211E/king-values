@@ -62,13 +62,22 @@ export default function UnitsPage() {
   const [search, setSearch] = useState("");
   const [unitsData, setUnitsData] = useState([]);
   const [progress, setProgress] = useState(90); // Start at 90%
-  // --- mobile detection (desktop remains identical) ---
+  const [showGuidePopup, setShowGuidePopup] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 768);
     onResize(); // set once on mount
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    const hasSeenGuide = localStorage.getItem("hasSeenGuide");
+    if (!hasSeenGuide) {
+      setShowGuidePopup(true);
+      localStorage.setItem("hasSeenGuide", "true");
+    }
   }, []);
 
   const unitBtnRef = useRef(null);
@@ -86,8 +95,8 @@ export default function UnitsPage() {
   }, [unitsData]);
 
   useEffect(() => {
-  if (window.innerWidth <= 768) setCompact(true);
-}, []);
+    if (isMobile) setCompact(true);
+  }, [isMobile]);
 
   useEffect(() => {
     async function fetchUnits() {
@@ -217,68 +226,70 @@ export default function UnitsPage() {
     <div className="relative min-h-screen w-full text-white overflow-visile">
       <GalaxyBackground />
       <div className="relative z-10">
-        {/* ---------------- GUIDE SECTION ---------------- */}
-        <div
-          onClick={() => setShowGuide((prev) => !prev)}
-          className={`relative max-w-4xl mx-auto px-6 pt-4 pb-3 -mt-8 text-center rounded-2xl cursor-pointer transition-all duration-300
-    before:absolute before:-bottom-[12px] before:-left-[14px] before:-right-[14px] before:-top-[-8px]
-    before:rounded-2xl before:z-[-1] before:transition-all before:duration-500
-    hover:before:shadow-[0_0_45px_10px_rgba(155,100,255,0.4)]
-  `}
-        >
-          <h2
-            className={`font-extrabold text-3xl sm:text-4xl transition-all duration-300 flex items-center justify-center gap-2 text-white hover:text-[#efbf04]`}
-          >
-            Guide
-            <span
-              className={`transition-transform duration-300 ${showGuide ? "rotate-180" : "rotate-0"
-                }`}
-            >
-              ▼
-            </span>
-          </h2>
 
+        {/* ---------------- GUIDE POPUP ---------------- */}
+        {showGuidePopup && (
           <div
-            className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${showGuide ? "max-h-[800px] opacity-100 mt-4" : "max-h-0 opacity-0"
-              }`}
+            className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowGuidePopup(false)}
           >
-            <ul className="list-disc list-inside text-left space-y-2 text-[1.5rem] leading-relaxed">
-              <li>
-                Placeholder for general info
-              </li>
-              <li>
-                Values are based on tradeable rerolls | 1 Value = 1 Tradeable RR
-              </li>
-              <li>
-                Rarities:{" "}
-                <span style={{ color: "#ffa0e4" }}>Exclusive</span> |{" "}
-                <span style={{ color: "#ff0000" }}>Secret</span> |{" "}
-                <span style={{ color: "#3c78d8" }}>Familiar</span> |{" "}
-                <span style={{ color: "#0aff69" }}>Mythic</span> |{" "}
-                <span
-                  style={{
-                    background:
-                      "linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet)",
-                    WebkitBackgroundClip: "text",
-                    color: "transparent",
-                  }}
-                >
-                  Robux Item
-                </span>{" "}
-                | Vanguard Colors are special and reflect the Vanguard unit
-              </li>
-            </ul>
-          </div>
-        </div>
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-[90%] max-w-lg bg-[#0d0a1a] text-white rounded-2xl p-6 border border-[#b58bff]/40 shadow-[0_0_40px_rgba(180,140,255,0.4)] animate-fadeIn"
+            >
+              <button
+                onClick={() => setShowGuidePopup(false)}
+                className="absolute top-3 right-4 text-gray-400 hover:text-gray-200 text-2xl"
+              >
+                ✕
+              </button>
 
+              <h2 className="text-3xl font-bold text-[#cda6ff] mb-4 text-center">Values Guide</h2>
+
+              <ul className="list-disc list-inside space-y-3 text-[1.05rem] leading-relaxed text-white/90">
+                <li>
+                  Rarities:{" "}
+                  <span style={{ color: "#ffa0e4" }}>Exclusive</span> |{" "}
+                  <span style={{ color: "#ff0000" }}>Secret</span> |{" "}
+                  <span style={{ color: "#3c78d8" }}>Familiar</span> |{" "}
+                  <span style={{ color: "#0aff69" }}>Mythic</span> |{" "}
+                  <span
+                    style={{
+                      background:
+                        "linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet)",
+                      WebkitBackgroundClip: "text",
+                      color: "transparent",
+                    }}
+                  >
+                    Robux Item
+                  </span>
+                  {" "}| Vanguard Colors are special and reflect the Vanguard unit.
+                </li>
+                <li>Values are based on rerolls | 1 Value = 1 Tradeable RR</li>
+                <li>Demand [1-10] - Displays desire from the community</li>
+                <li>Stability - A value's measure of being consistent over time</li>
+              </ul>
+            </div>
+          </div>
+        )}
 
         {/* ---------------- VALUES TITLE ---------------- */}
-        <div className="pt-4 pb-4 text-center">
-          <h1 className="text-[2.25rem] font-extrabold">Values</h1>
+        <div className="pt-8 pb-8 text-center">
+          <h1
+            className="font-extrabold text-[5rem] sm:text-[6rem] md:text-[6.5rem] leading-tight text-transparent bg-clip-text text-center mx-auto mt-[-15px] mb-[40px]"
+            style={{
+              backgroundImage: "linear-gradient(90deg, #c6a4ff, #f3b5ff, #b9b4ff, #c6a4ff)",
+              backgroundSize: "300% 300%",
+              animation: "titleGradient 12s ease-in-out infinite",
+              textShadow: "0 0 40px rgba(198,164,255,0.35), 0 0 70px rgba(243,181,255,0.25)",
+            }}
+          >
+            Values
+          </h1>
         </div>
 
         {/* ---------------- CATEGORY BAR ---------------- */}
-        <div className="relative category-bar flex items-center justify-center gap-3.5 mb-8 flex-wrap">
+        <div className="relative category-bar flex items-center justify-center gap-3.5 mb-8 flex-nowrap">
           {/* Search bar (like UnitPickerModal) */}
           <input
             type="text"
@@ -425,6 +436,24 @@ export default function UnitsPage() {
               </div>
             )}
           </div>
+           {/* GUIDE button — same size as chips, with true rounded gradient border */}
+          <button
+            onClick={() => setShowGuidePopup(true)}
+            className="ml-2 inline-flex items-center justify-center gap-2 h-[40px] px-4 rounded-full font-bold text-white transition-all duration-300 hover:scale-[1.05] hover:shadow-[0_0_15px_rgba(190,140,255,0.35)]"
+            title="Guide"
+            style={{
+              // Two-layer background = gradient border that respects border-radius
+              backgroundImage:
+                'linear-gradient(#12001f, #0a0015), linear-gradient(45deg,#b57aff,#d4a6ff)',
+              backgroundOrigin: 'padding-box, border-box',
+              backgroundClip: 'padding-box, border-box',
+              border: '2px solid transparent',
+              borderRadius: '9999px',
+            }}
+          >
+            <span className="text-lg font-extrabold leading-none">?</span>
+            <span>Guide</span>
+          </button>
         </div>
 
         {/* ---------------- GRID ---------------- */}
@@ -441,20 +470,20 @@ export default function UnitsPage() {
           className="relative grid px-4 pb-8 z-10"
           style={{ gridTemplateColumns: "1fr auto 1fr" }}
         >
-<div
-  className={`grid justify-center ${isMobile ? "mobile-grid" : ""}`}
-  style={{
-    gridColumn: "2 / 3",
-    gap: isMobile ? "10px" : "20px",
-    gridTemplateColumns: isMobile
-      ? "repeat(auto-fit, minmax(75px, 1fr))" // 👈 allows 4–5 cards per row
-      : compact
-      ? "repeat(9, 140px)"
-      : "repeat(6, 215px)",
-    justifyItems: "center",
-    alignItems: "start",
-  }}
->
+          <div
+            className={`grid justify-center ${isMobile ? "mobile-grid" : ""}`}
+            style={{
+              gridColumn: "2 / 3",
+              gap: isMobile ? "8px" : "20px",
+              gridTemplateColumns: isMobile
+                ? "repeat(auto-fill, minmax(95px, 1fr))"
+                : compact
+                  ? "repeat(9, 140px)"
+                  : "repeat(6, 215px)",
+              justifyItems: "center",
+              alignItems: "start",
+            }}
+          >
             {filteredUnits.map((u) =>
               compact ? (
                 <CompactUnitCard
@@ -524,8 +553,8 @@ function ChipWithIcon({ icon, label, active, onClick }) {
     <button
       onClick={onClick}
       className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold border transition-all duration-150 ${active
-          ? "border-white bg-[linear-gradient(180deg,#222,#101010)] shadow-[0_0_10px_rgba(255,255,255,0.25)]"
-          : "border-white/40 bg-[linear-gradient(180deg,#111,#2f2f2f)]"
+        ? "border-white bg-[linear-gradient(180deg,#222,#101010)] shadow-[0_0_10px_rgba(255,255,255,0.25)]"
+        : "border-white/40 bg-[linear-gradient(180deg,#111,#2f2f2f)]"
         } hover:scale-[1.05]`}
     >
       <Image
@@ -541,17 +570,8 @@ function ChipWithIcon({ icon, label, active, onClick }) {
 }
 
 <style jsx global>{`
-    /* 🌙 Mobile-specific redesign */
   @media (max-width: 768px) {
-    /* Auto-compact scaling */
-    .unit-card,
-    .compact-unit-card {
-      transform: scale(0.72);
-      transform-origin: top center;
-      margin: 0 auto;
-    }
-
-    /* Grid appearance */
+    /* 🌙 Mobile grid and scaling */
     .mobile-grid {
       width: 100%;
       max-width: 95vw;
@@ -559,15 +579,25 @@ function ChipWithIcon({ icon, label, active, onClick }) {
       display: grid;
       justify-items: center;
       align-items: start;
-      grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
-      gap: 10px;
-      padding-bottom: 30px;
+      grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+      gap: 8px;
+      padding-bottom: 25px;
     }
 
-    /* Category bar wrapping */
+    /* Compact card resizing */
+    .unit-card,
+    .compact-unit-card {
+      transform: scale(0.8);
+      transform-origin: top center;
+      border-radius: 12px !important;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+      margin: 0 auto;
+    }
+
+    /* Clean buttons and category layout */
     .category-bar {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       justify-content: center;
       gap: 6px 8px;
       margin-bottom: 1rem;
@@ -582,33 +612,33 @@ function ChipWithIcon({ icon, label, active, onClick }) {
       font-size: 0.8rem;
     }
 
+    /* Resize search bar */
     input[type="text"] {
-      width: 110px !important;
+      width: 120px !important;
       font-size: 0.9rem;
     }
 
-    h1, h2 {
-      margin-top: 0.5rem;
-      margin-bottom: 0.5rem;
-      font-size: 1.2rem;
+    /* Compact titles */
+    h1,
+    h2 {
+      margin-top: 0.4rem;
+      margin-bottom: 0.4rem;
+      font-size: 1.1rem;
     }
 
-    .grid {
-      justify-items: center;
-      align-content: start;
-    }
-
-    .unit-card,
-    .compact-unit-card {
-      border-radius: 10px !important;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-    }
-
+    /* Disable hover glow on mobile */
     .unit-card:hover,
     .compact-unit-card:hover {
       box-shadow: none !important;
     }
   }
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}
 `}</style>
 
 
