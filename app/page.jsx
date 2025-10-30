@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useState, useMemo } from "react";
 
 export default function Home() {
-  // FAQ flipping state
   const [flipped, setFlipped] = useState([false, false, false]);
   const toggleFlip = (i) =>
     setFlipped((prev) => {
@@ -14,7 +13,6 @@ export default function Home() {
       return next;
     });
 
-  // ✅ Memoized stars (reduced by ~12.5% from 60 → 52)
   const stars = useMemo(
     () =>
       Array.from({ length: 52 }).map((_, i) => ({
@@ -26,7 +24,6 @@ export default function Home() {
     []
   );
 
-  // ✅ Memoized shooting stars (reduced by ~12.5% from 15 → 13)
   const shootingStars = useMemo(
     () =>
       Array.from({ length: 13 }).map((_, i) => ({
@@ -39,7 +36,7 @@ export default function Home() {
   );
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center text-center text-white px-6 py-16 overflow-hidden">
+    <div className="relative min-h-screen flex flex-col items-center text-center text-white px-4 sm:px-6 md:px-8 py-16 overflow-hidden">
       {/* Galaxy Background */}
       <div
         className="absolute inset-0 z-0 will-change-transform"
@@ -83,8 +80,9 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col items-center w-full max-w-[90rem]">
+        {/* Subtitle */}
         <p
-          className="text-4xl mb-2 font-semibold tracking-[8px] text-transparent bg-clip-text"
+          className="text-3xl sm:text-4xl mb-2 font-semibold tracking-[6px] sm:tracking-[8px] text-transparent bg-clip-text"
           style={{
             backgroundImage:
               "linear-gradient(90deg, #ffffffcc, #d3cfff, #ffffffcc)",
@@ -96,10 +94,10 @@ export default function Home() {
           Some Word I Didn't Decide Yet
         </p>
 
-        {/* Clickable Title */}
+        {/* Title */}
         <Link href="/units" passHref>
           <h1
-            className="font-extrabold text-[6rem] sm:text-[7rem] md:text-[7.5rem] leading-tight bg-clip-text text-transparent pb-4 mb-5 cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
+            className="font-extrabold text-[4rem] sm:text-[6rem] md:text-[7rem] leading-tight bg-clip-text text-transparent pb-4 mb-5 cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
             style={{
               backgroundImage:
                 "linear-gradient(90deg, #c6a4ff, #f3b5ff, #b9b4ff, #c6a4ff)",
@@ -107,16 +105,7 @@ export default function Home() {
               animation: "titleGradient 12s ease-in-out infinite",
               textShadow:
                 "0 0 40px rgba(198,164,255,0.35), 0 0 70px rgba(243,181,255,0.25)",
-              willChange: "transform, text-shadow",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.textShadow =
-                "0 0 40px rgba(198,164,255,0.8), 0 0 80px rgba(243,181,255,0.7)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.textShadow =
-                "0 0 40px rgba(198,164,255,0.35), 0 0 70px rgba(243,181,255,0.25)")
-            }
           >
             Anime Vanguards
             <br />
@@ -126,7 +115,7 @@ export default function Home() {
 
         {/* Intro */}
         <div
-          className="mt-10 text-[2.4rem] font-semibold bg-clip-text text-transparent"
+          className="mt-8 text-[1.6rem] sm:text-[2rem] font-semibold bg-clip-text text-transparent px-2"
           style={{
             backgroundImage:
               "linear-gradient(90deg, #bfaaff, #c7b6ff, #e2d7ff, #bfaaff)",
@@ -136,14 +125,14 @@ export default function Home() {
               "0 0 25px rgba(199,182,255,0.4), 0 0 50px rgba(226,215,255,0.2)",
           }}
         >
-          This Value List is Made and Agreed Upon by a Collective Group of AV
-          <br />
-          Competitive Players and Traders
+          King Values is Made and Agreed Upon by a Collective Group of AV
+          <br className="hidden sm:block" />
+          Competitive Players and Traders (Listed Below)
         </div>
 
         {/* Creator */}
         <div
-          className="text-[2rem] font-medium mt-8 bg-clip-text text-transparent"
+          className="text-[1.4rem] sm:text-[1.8rem] font-medium mt-8 bg-clip-text text-transparent px-4"
           style={{
             backgroundImage:
               "linear-gradient(90deg, #b5e7ff, #a8f0ff, #c6ffff, #b5e7ff)",
@@ -161,60 +150,46 @@ export default function Home() {
             href="https://www.youtube.com/@King_Mo3211"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#f9cb9c] hover:text-[#ffe7b1] transition-all duration-300 hover:drop-shadow-[0_0_20px_rgba(255,240,180,0.8)]"
+            className="text-[#f9cb9c] hover:text-[#ffe7b1] transition-all duration-300 hover:drop-shadow-[0_0_20px_rgba(255,240,180,0.8)] break-all"
           >
             https://www.youtube.com/@King_Mo3211
           </a>
         </div>
 
-        {/* Credits */}
-        <div
-          className="max-w-[75rem] text-white/90 mt-3 mb-20 px-4 text-[1.8rem] leading-relaxed"
-          style={{
-            textShadow: "0 0 20px rgba(249,203,156,0.25)",
-          }}
-        >
-          <p className="mt-3 font-medium">
-            <span className="text-[#f9cb9c]">Co-Owners:</span> Me, Ekuzotia, Zog, Pop{" "}
-            <br />
-            <span className="text-[#f9cb9c]">Value Team:</span> Xon, Gohary,
-            Fadi, Simple, Kegs, Exs, Awesometicklenip, Void, Feh, Nathan, Connos, Knull, Nat, Manjiro, Mespiritan
-          </p>
-        </div>
-
-        {/* Feature Boxes */}
-        <div className="w-full max-w-[75rem] flex flex-col sm:flex-row justify-center gap-10 mb-20 text-[1.8rem]">
+        {/* Site Features + FAQ (Compact, Balanced, Modern Look) */}
+        <div className="w-full max-w-[90rem] flex flex-col lg:flex-row justify-center items-start gap-8 mt-16 mb-14 px-4 sm:px-6">
           {/* Site Features */}
-          <div className="flex-1 rounded-3xl p-[2px] bg-[linear-gradient(90deg,#a18cff,#c28cff,#a1d0ff)] animate-gradientSlow">
-            <div
-              className="rounded-3xl bg-[#0e0e15] p-10 h-full flex flex-col justify-center items-center"
-              style={{ textShadow: "0 0 25px rgba(161,140,255,0.4)" }}
-            >
-              <h2 className="font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#a18cff] to-[#c28cff]">
+          <div className="flex-1 rounded-2xl p-[1.5px] bg-gradient-to-r from-[#7d66ff] to-[#a988ff] shadow-[0_0_25px_rgba(160,120,255,0.2)]">
+            <div className="rounded-2xl bg-[#0e0e16]/90 backdrop-blur-md p-6 sm:p-8 h-full flex flex-col justify-start items-center text-center transition-all duration-300 hover:shadow-[0_0_35px_rgba(160,140,255,0.25)]">
+              <h2 className="font-bold mb-5 text-transparent bg-clip-text bg-gradient-to-r from-[#b9a6ff] to-[#e4d8ff] text-[2.3rem] tracking-wide">
                 Site Features
               </h2>
-              <div className="grid gap-6 w-full">
+              <div className="grid gap-4 w-full">
                 {[
                   {
                     title: "Search for Units",
-                    desc: "Easily locate any unit or familiar by name or rarity.",
+                    desc: "Quickly locate any unit or familiar by name, rarity, or in-game alias.",
                   },
                   {
                     title: "Filter by Value or Demand",
-                    desc: "Sort cards to find high-demand or high-value units fast.",
+                    desc: "Sort to find high-demand or high-value units instantly with precision filters.",
                   },
                   {
                     title: "Stable-Only Mode",
-                    desc: "Focus on cards with consistent market stability.",
+                    desc: "Focus on consistent-value cards and avoid market volatility easily.",
                   },
                 ].map((f, i) => (
                   <div
                     key={i}
-                    className="rounded-2xl p-[2px] bg-[linear-gradient(90deg,#a18cff,#c28cff,#a1d0ff)]"
+                    className="rounded-xl p-[1.2px] bg-gradient-to-r from-[#a697ff]/60 to-[#8a7cff]/60"
                   >
-                    <div className="rounded-2xl bg-[#131320] p-6 shadow-md h-full">
-                      <p className="font-semibold text-[#c9baff]">{f.title}</p>
-                      <p className="text-white/60 text-[1.6rem] mt-1">{f.desc}</p>
+                    <div className="rounded-xl bg-[#141423]/95 p-5 text-left sm:text-center hover:bg-[#18182b] transition-all duration-300">
+                      <p className="font-semibold text-[#d5ceff] text-[1.75rem] leading-snug">
+                        {f.title}
+                      </p>
+                      <p className="text-white/75 text-[1.45rem] mt-1.5 leading-snug">
+                        {f.desc}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -223,46 +198,42 @@ export default function Home() {
           </div>
 
           {/* FAQ */}
-          <div className="flex-1 rounded-3xl p-[2px] bg-[linear-gradient(90deg,#88aaff,#b088ff,#c2a8ff)] animate-gradientSlow">
-            <div
-              className="rounded-3xl bg-[#0e0e15] p-10 h-full flex flex-col justify-center items-center"
-              style={{ textShadow: "0 0 25px rgba(136,170,255,0.4)" }}
-            >
-              <h2 className="font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#88aaff] to-[#b088ff]">
+          <div className="flex-1 rounded-2xl p-[1.5px] bg-gradient-to-r from-[#8692ff] to-[#a5b0ff] shadow-[0_0_25px_rgba(130,140,255,0.2)]">
+            <div className="rounded-2xl bg-[#0e0e16]/90 backdrop-blur-md p-6 sm:p-8 h-full flex flex-col justify-start items-center text-center transition-all duration-300 hover:shadow-[0_0_35px_rgba(150,170,255,0.25)]">
+              <h2 className="font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#cdd6ff] to-[#f0f3ff] text-[2.3rem] tracking-wide">
                 FAQ
               </h2>
-              <p className="text-[1.6rem] text-white mb-8 animate-pulseGlow">
-                Click a question to reveal the answer.
+              <p className="text-[1.5rem] text-white/70 mb-6 italic">
+                Tap a question to reveal the answer.
               </p>
-              <div className="grid gap-6 w-full">
+              <div className="grid gap-4 w-full">
                 {[
                   {
                     q: "How often is the list updated?",
-                    a: "The list is updated daily based on trading data",
+                    a: "Values are refreshed daily with verified in-game trade data.",
                   },
                   {
                     q: "Who manages the values?",
-                    a: "A group of experienced traders and players, listed above",
+                    a: "A collaborative team of veteran traders and developers maintaining balance.",
                   },
                   {
-                    q: "Are the values official and accurate?",
-                    a: "They are accurate values based on trades, rarity, and me being TUFF ASL, SUBSCRIBE to me, King Mo3211",
+                    q: "Are the values official?",
+                    a: "They reflect accurate trade averages and community consensus.",
                   },
                 ].map((item, i) => (
                   <div
                     key={i}
-                    className={`faq-card relative h-[120px] perspective cursor-pointer rounded-2xl p-[2px] bg-[linear-gradient(90deg,#88aaff,#b088ff,#c2a8ff)]`}
+                    className={`faq-card relative h-[90px] perspective cursor-pointer rounded-xl p-[1.2px] bg-gradient-to-r from-[#aeb6ff]/60 to-[#8f96ff]/60`}
                     onClick={() => toggleFlip(i)}
                   >
                     <div
-                      className={`faq-inner transition-transform duration-700 transform ${
-                        flipped[i] ? "rotate-y-180" : ""
-                      } h-full`}
+                      className={`faq-inner transition-transform duration-600 transform ${flipped[i] ? "rotate-y-180" : ""
+                        } h-full`}
                     >
-                      <div className="faq-front absolute inset-0 bg-[#131320] rounded-2xl p-6 flex items-center justify-center text-[1.7rem] font-semibold text-[#c9baff]">
+                      <div className="faq-front absolute inset-0 bg-[#141423]/95 rounded-xl p-4 flex items-center justify-center text-[1.55rem] font-semibold text-[#d8d2ff] leading-tight">
                         {item.q}
                       </div>
-                      <div className="faq-back absolute inset-0 bg-[#1c1c2e] rounded-2xl p-6 flex items-center justify-center text-[1.6rem] text-white/70 transform rotate-y-180">
+                      <div className="faq-back absolute inset-0 bg-[#1a1a2b]/95 rounded-xl p-4 flex items-center justify-center text-[1.45rem] text-white/75 transform rotate-y-180 leading-tight">
                         {item.a}
                       </div>
                     </div>
@@ -271,6 +242,22 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Credits (moved below Site Features + FAQ) */}
+        <div
+          className="max-w-[75rem] text-white/90 mt-3 mb-20 px-4 text-[1.6rem] sm:text-[1.8rem] leading-relaxed"
+          style={{
+            textShadow: "0 0 20px rgba(249,203,156,0.25)",
+          }}
+        >
+          <p className="mt-3 font-medium">
+            <span className="text-[#f9cb9c]">Co-Owners:</span> Me, Ekuzotia, Zog, Pop{" "}
+            <br />
+            <span className="text-[#f9cb9c]">Value Team:</span> Xon, Gohary, Fadi,
+            Simple, Kegs, Exs, Awesometicklenip, Void, Feh, Nathan, Connos, Knull,
+            Nat, Manjiro, Mespiritan
+          </p>
         </div>
 
         {/* Discord */}

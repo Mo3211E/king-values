@@ -13,13 +13,16 @@ export default function TradeHub() {
   const [ads, setAds] = useState([]);
   const [description, setDescription] = useState("");
   const [discord, setDiscord] = useState("");
-const [roblox, setRoblox] = useState("");
+  const [roblox, setRoblox] = useState("");
   const [discordValid, setDiscordValid] = useState(true);
   const [robloxValid, setRobloxValid] = useState(true);
   const [player1, setPlayer1] = useState([]);
   const [player2, setPlayer2] = useState([]);
-  const [search, setSearch] = useState("");
+  const [search] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchOffer, setSearchOffer] = useState("");
+  const [searchLooking, setSearchLooking] = useState("");
+
 
   const p1Total = useMemo(
     () => player1.reduce((s, u) => s + toNumber(u.Value), 0),
@@ -41,7 +44,7 @@ const [roblox, setRoblox] = useState("");
     const you = player1.map((u) => u.Name).join(", ");
     const them = player2.map((u) => u.Name).join(", ");
     if (!you && !them) return "";
-    return `${you || "?"} for ${them || "?"}`;
+    return `${you || "?"} FOR ${them || "?"}`;
   }, [player1, player2]);
 
   // Load trades
@@ -69,17 +72,17 @@ const [roblox, setRoblox] = useState("");
     if (!player1.length && !player2.length)
       return alert("Please add units to your trade.");
 
-  const newAd = {
-  title: generatedTitle,
-  description,
-  player1,
-  player2,
-  p1Total,
-  p2Total,
-  verdict,
-  discord,
-  roblox,
-};
+    const newAd = {
+      title: generatedTitle,
+      description,
+      player1,
+      player2,
+      p1Total,
+      p2Total,
+      verdict,
+      discord,
+      roblox,
+    };
 
     try {
       const res = await fetch("/api/trades", {
@@ -105,13 +108,26 @@ const [roblox, setRoblox] = useState("");
   };
 
   const filteredAds = ads.filter((ad) => {
-    const query = search.toLowerCase();
-    return (
-      ad.title.toLowerCase().includes(query) ||
-      ad.description.toLowerCase().includes(query) ||
-      ad.player1.some((u) => u.Name.toLowerCase().includes(query)) ||
-      ad.player2.some((u) => u.Name.toLowerCase().includes(query))
-    );
+    const offerQuery = searchOffer.toLowerCase();
+    const lookQuery = searchLooking.toLowerCase();
+
+    const matchesOffer =
+      !offerQuery ||
+      ad.player1.some((u) => {
+        const name = u.Name?.toLowerCase() || "";
+        const inGame = u["In Game Name"]?.toLowerCase() || "";
+        return name.includes(offerQuery) || inGame.includes(offerQuery);
+      });
+
+    const matchesLooking =
+      !lookQuery ||
+      ad.player2.some((u) => {
+        const name = u.Name?.toLowerCase() || "";
+        const inGame = u["In Game Name"]?.toLowerCase() || "";
+        return name.includes(lookQuery) || inGame.includes(lookQuery);
+      });
+
+    return matchesOffer && matchesLooking;
   });
 
   return (
@@ -200,10 +216,10 @@ const [roblox, setRoblox] = useState("");
           <div className="w-1/3 text-center">
             <h2
               className={`text-2xl sm:text-3xl font-extrabold ${p1Total === p2Total
-                  ? "text-gray-300"
-                  : p1Total < p2Total
-                    ? "text-emerald-400"
-                    : "text-red-500"
+                ? "text-gray-300"
+                : p1Total < p2Total
+                  ? "text-emerald-400"
+                  : "text-red-500"
                 }`}
               style={{
                 textShadow:
@@ -238,63 +254,61 @@ const [roblox, setRoblox] = useState("");
             backdropFilter: "blur(6px)",
           }}
         >
- {/* Discord Username */}
-<input
-  value={discord}
-  onChange={(e) => {
-    let value = e.target.value;
-    // track if invalid before cleaning
-    const invalid = /[A-Z\s]/.test(value);
-    value = value.toLowerCase().replace(/\s+/g, "");
-    setDiscord(value.slice(0, 32)); // 32 max for Discord
-    setDiscordValid(!invalid);
-  }}
-  placeholder="Discord Username and/or"
-  maxLength={15}
-  className={`w-full px-3 py-2 rounded-lg mb-3 outline-none text-white placeholder-white/60 transition-all ${
-    discordValid ? "" : "border-red-500 bg-red-950/30"
-  }`}
-  style={{
-    background: discordValid
-      ? "rgba(255,255,255,0.06)"
-      : "rgba(255,100,100,0.08)",
-    border: discordValid
-      ? "1px solid rgba(190,160,255,0.35)"
-      : "1px solid rgba(255,100,100,0.6)",
-    boxShadow: discordValid
-      ? "inset 0 0 8px rgba(160,120,255,0.12)"
-      : "inset 0 0 6px rgba(255,80,80,0.2)",
-  }}
-/>
+          {/* Discord Username */}
+          <input
+            value={discord}
+            onChange={(e) => {
+              let value = e.target.value;
+              // track if invalid before cleaning
+              const invalid = /[A-Z\s]/.test(value);
+              value = value.toLowerCase().replace(/\s+/g, "");
+              setDiscord(value.slice(0, 32)); // 32 max for Discord
+              setDiscordValid(!invalid);
+            }}
+            placeholder="Discord Username and/or"
+            maxLength={15}
+            className={`w-full px-3 py-2 rounded-lg mb-3 outline-none text-white placeholder-white/60 transition-all ${discordValid ? "" : "border-red-500 bg-red-950/30"
+              }`}
+            style={{
+              background: discordValid
+                ? "rgba(255,255,255,0.06)"
+                : "rgba(255,100,100,0.08)",
+              border: discordValid
+                ? "1px solid rgba(190,160,255,0.35)"
+                : "1px solid rgba(255,100,100,0.6)",
+              boxShadow: discordValid
+                ? "inset 0 0 8px rgba(160,120,255,0.12)"
+                : "inset 0 0 6px rgba(255,80,80,0.2)",
+            }}
+          />
 
-{/* Roblox Username */}
-<input
-  value={roblox}
-  onChange={(e) => {
-    let value = e.target.value;
-    // Only disallow spaces and symbols other than letters, numbers, or underscore
-    const invalid = /\s|[^a-zA-Z0-9_]/.test(value);
-    value = value.replace(/[^a-zA-Z0-9_]/g, ""); // keep caps allowed
-    setRoblox(value.slice(0, 20)); // 20 max for Roblox
-    setRobloxValid(!invalid);
-  }}
-  placeholder="Roblox Username (To be contacted about the trade)"
-  maxLength={20}
-  className={`w-full px-3 py-2 rounded-lg mb-3 outline-none text-white placeholder-white/60 transition-all ${
-    robloxValid ? "" : "border-red-500 bg-red-950/30"
-  }`}
-  style={{
-    background: robloxValid
-      ? "rgba(255,255,255,0.06)"
-      : "rgba(255,100,100,0.08)",
-    border: robloxValid
-      ? "1px solid rgba(190,160,255,0.35)"
-      : "1px solid rgba(255,100,100,0.6)",
-    boxShadow: robloxValid
-      ? "inset 0 0 8px rgba(160,120,255,0.12)"
-      : "inset 0 0 6px rgba(255,80,80,0.2)",
-  }}
-/>
+          {/* Roblox Username */}
+          <input
+            value={roblox}
+            onChange={(e) => {
+              let value = e.target.value;
+              // Only disallow spaces and symbols other than letters, numbers, or underscore
+              const invalid = /\s|[^a-zA-Z0-9_]/.test(value);
+              value = value.replace(/[^a-zA-Z0-9_]/g, ""); // keep caps allowed
+              setRoblox(value.slice(0, 20)); // 20 max for Roblox
+              setRobloxValid(!invalid);
+            }}
+            placeholder="Roblox Username (To be contacted about the trade)"
+            maxLength={20}
+            className={`w-full px-3 py-2 rounded-lg mb-3 outline-none text-white placeholder-white/60 transition-all ${robloxValid ? "" : "border-red-500 bg-red-950/30"
+              }`}
+            style={{
+              background: robloxValid
+                ? "rgba(255,255,255,0.06)"
+                : "rgba(255,100,100,0.08)",
+              border: robloxValid
+                ? "1px solid rgba(190,160,255,0.35)"
+                : "1px solid rgba(255,100,100,0.6)",
+              boxShadow: robloxValid
+                ? "inset 0 0 8px rgba(160,120,255,0.12)"
+                : "inset 0 0 6px rgba(255,80,80,0.2)",
+            }}
+          />
 
           {/* Description */}
           <textarea
@@ -311,33 +325,59 @@ const [roblox, setRoblox] = useState("");
             }}
           />
 
-          <button
-            onClick={postTrade}
-            className="w-full sm:w-auto px-8 py-2 rounded-lg font-bold transition"
-            style={{
-              background:
-                "linear-gradient(90deg, rgba(150,90,255,0.5), rgba(230,150,255,0.45))",
-              border: "1px solid rgba(190,160,255,0.35)",
-              boxShadow:
-                "0 0 14px rgba(180,120,255,0.3), inset 0 0 8px rgba(180,120,255,0.2)",
-            }}
-          >
-            Post Trade
-          </button>
+          <div className="flex justify-center">
+            <button
+              onClick={postTrade}
+              className="px-10 py-2 rounded-lg font-bold transition"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(150,90,255,0.5), rgba(230,150,255,0.45))",
+                border: "1px solid rgba(190,160,255,0.35)",
+                boxShadow:
+                  "0 0 14px rgba(180,120,255,0.3), inset 0 0 8px rgba(180,120,255,0.2)",
+              }}
+            >
+              Post Trade
+            </button>
+          </div>
         </div>
 
-        {/* Search Bar */}
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search trades..."
-          className="w-full px-3 py-2 rounded-lg mb-10 outline-none text-white placeholder-white/60"
-          style={{
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(190,160,255,0.35)",
-            boxShadow: "inset 0 0 8px rgba(160,120,255,0.12)",
-          }}
-        />
+        {/* Dual Search Bars (Offering / Looking For) */}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mb-10 text-center">
+          {/* Offering Search */}
+          <input
+            value={searchOffer}
+            onChange={(e) => setSearchOffer(e.target.value)}
+            placeholder="Search offerings..."
+            className="flex-1 px-3 py-2 rounded-lg outline-none text-white placeholder-white/60 text-center"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(190,160,255,0.35)",
+              boxShadow: "inset 0 0 8px rgba(160,120,255,0.12)",
+            }}
+          />
+
+          {/* “FOR” separator */}
+          <span
+            className="animated-gold text-lg font-bold select-none"
+            style={{ padding: "0 10px", whiteSpace: "nowrap" }}
+          >
+            FOR
+          </span>
+
+          {/* Looking For Search */}
+          <input
+            value={searchLooking}
+            onChange={(e) => setSearchLooking(e.target.value)}
+            placeholder="Search looking for..."
+            className="flex-1 px-3 py-2 rounded-lg outline-none text-white placeholder-white/60 text-center"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(190,160,255,0.35)",
+              boxShadow: "inset 0 0 8px rgba(160,120,255,0.12)",
+            }}
+          />
+        </div>
 
         {loading && (
           <p className="text-center text-violet-300 mb-4">Loading trades...</p>
@@ -357,9 +397,20 @@ const [roblox, setRoblox] = useState("");
                   "0 0 18px rgba(200,170,255,0.15), inset 0 0 8px rgba(160,120,255,0.12)",
               }}
             >
-              <h3 className="text-xl font-bold mb-2 text-violet-200">
-                {ad.title}
-              </h3>
+              <h3
+                className="text-xl font-bold mb-2 text-violet-200"
+                dangerouslySetInnerHTML={{
+                  __html: ad.title
+                    // color the commas
+                    .replace(/,/g, '<span style="color:#c49eff;">,</span>')
+                    // apply gradient animation to “for”
+                    .replace(
+                      /\bFOR\b/gi,
+                      '<span class="animated-gold"> FOR </span>'
+                    ),
+                }}
+              ></h3>
+
               {ad.description && (
                 <p className="mb-4 text-white/85">{ad.description}</p>
               )}
@@ -394,16 +445,16 @@ const [roblox, setRoblox] = useState("");
                 </div>
               </div>
 
-            {/* Verdict + Usernames (same line, bottom right) */}
-<div className="flex justify-between items-center mt-2 mb-1">
-  <p className="font-bold text-violet-300">{ad.verdict}</p>
-  {(ad.discord || ad.roblox) && (
-    <div className="text-sm text-white/70 flex gap-4 text-right">
-      {ad.discord && <span>Discord: {ad.discord}</span>}
-      {ad.roblox && <span>Roblox: {ad.roblox}</span>}
-    </div>
-  )}
-</div>
+              {/* Verdict + Usernames (same line, bottom right) */}
+              <div className="flex justify-between items-center mt-2 mb-1">
+                <p className="font-bold text-violet-300">{ad.verdict}</p>
+                {(ad.discord || ad.roblox) && (
+                  <div className="text-sm text-white/70 flex gap-4 text-right">
+                    {ad.discord && <span>Discord: {ad.discord}</span>}
+                    {ad.roblox && <span>Roblox: {ad.roblox}</span>}
+                  </div>
+                )}
+              </div>
               <p className="text-xs text-white/50 mt-1">
                 Posted: {new Date(ad.createdAt).toLocaleString()}
               </p>
@@ -443,6 +494,35 @@ const [roblox, setRoblox] = useState("");
   .pulse-glow {
     animation: pulseGlow 3.5s ease-in-out infinite;
   }
+
+  /* ---- Animated light-gold gradient for the word “for” ---- */
+.animated-gold {
+  background: linear-gradient(
+    90deg,
+    #ffe29f,
+    #ffcc70,
+    #fff4c2,
+    #ffe29f
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldShift 6s ease-in-out infinite;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 230, 180, 0.4);
+}
+
+@keyframes goldShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
 `}</style>
     </main>
   );

@@ -95,6 +95,41 @@ const unit = unitsData.find(
         background: "linear-gradient(180deg, #0a001a 0%, #12003a 100%)",
       }}
     >
+      {/* Back Arrow (under navbar, top-left corner) */}
+<div
+  onClick={() => {
+    const prevScroll = sessionStorage.getItem("scrollPos");
+    router.back();
+    if (prevScroll) {
+      setTimeout(() => window.scrollTo(0, parseFloat(prevScroll)), 250);
+    }
+  }}
+  className="absolute top-20 left-8 cursor-pointer flex items-center group transition-transform hover:scale-105"
+>
+  <img
+    src="/icons/back-arrow.png" // 👈 place your arrow image here (see Step 3)
+    alt="Go Back"
+    className="w-6 h-6 mr-2 transition-all group-hover:brightness-150"
+    style={{
+      filter:
+        "brightness(1.2) saturate(1.2) drop-shadow(0 0 8px rgba(192,192,192,0.4))",
+    }}
+  />
+  <span
+    className="text-lg font-extrabold"
+    style={{
+      background:
+        "linear-gradient(90deg, #C0C0C0, #E8E8E8, #C0C0C0)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      textShadow:
+        "0 0 10px rgba(255,255,255,0.4), 0 0 20px rgba(180,180,180,0.3)",
+    }}
+  >
+    Back
+  </span>
+</div>
+
       <h1 className="text-4xl font-extrabold mb-8">{Name}</h1>
 
       {/* main two-column layout */}
@@ -102,7 +137,7 @@ const unit = unitsData.find(
         {/* ------------------- Left: card replica (click to go back) ------------------- */}
         <div className="flex flex-col items-center">
           <div className="text-center mb-3 text-2xl font-extrabold text-[#C0C0C0]">
-            Click to go back
+            Click to go to Values
           </div>
 
           <UnitCard
