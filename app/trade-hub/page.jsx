@@ -22,6 +22,8 @@ export default function TradeHub() {
   const [loading, setLoading] = useState(false);
   const [searchOffer, setSearchOffer] = useState("");
   const [searchLooking, setSearchLooking] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [errorActive, setErrorActive] = useState(false);
 
 
   const p1Total = useMemo(
@@ -69,8 +71,21 @@ export default function TradeHub() {
 
   // Post new trade
   const postTrade = async () => {
-    if (!player1.length && !player2.length)
-      return alert("Please add units to your trade.");
+    setErrorMsg("");
+    setErrorActive(false);
+
+    // --- FRONTEND VALIDATION ---
+    if (!player1.length || !player2.length) {
+      setErrorMsg("Add Units/Items to both fields.");
+      setErrorActive(true);
+      return;
+    }
+
+    if (!discord.trim() && !roblox.trim()) {
+      setErrorMsg("Missing Required Fields — enter Discord or Roblox username.");
+      setErrorActive(true);
+      return;
+    }
 
     const newAd = {
       title: generatedTitle,
@@ -92,18 +107,35 @@ export default function TradeHub() {
       });
 
       const data = await res.json();
-      if (data.success) {
-        setAds([data.trade, ...ads]);
-        setDescription("");
-        setPlayer1([]);
-        setPlayer2([]);
-        setDiscord("");
-        setRoblox("");
-      } else {
-        alert(data.error || "Error posting trade");
+
+      if (!res.ok || !data.success) {
+        // Interpret backend responses
+        if (data.error?.includes("Limit reached")) {
+          setErrorMsg("Maximum Trades Reached — try again in 24 hours.");
+        } else if (data.error?.includes("Add Units")) {
+          setErrorMsg("Add Units/Items to both fields.");
+        } else if (data.error?.includes("Invalid trade")) {
+          setErrorMsg("Missing Required Fields — please check inputs.");
+        } else {
+          setErrorMsg(data.error || "An unexpected error occurred.");
+        }
+        setErrorActive(true);
+        return;
       }
+
+      // Success — reset form
+      setAds([data.trade, ...ads]);
+      setDescription("");
+      setPlayer1([]);
+      setPlayer2([]);
+      setDiscord("");
+      setRoblox("");
+      setErrorMsg("");
+      setErrorActive(false);
     } catch (err) {
       console.error("Post trade failed:", err);
+      setErrorMsg("Server unreachable — please try again later.");
+      setErrorActive(true);
     }
   };
 
@@ -244,7 +276,8 @@ export default function TradeHub() {
 
         {/* Post Trade Section */}
         <div
-          className="rounded-2xl p-6 mb-12 shadow-2xl border"
+          className={`rounded-2xl p-6 mb-12 shadow-2xl border transition-all ${errorActive ? "border-2 border-red-500" : ""
+            }`}
           style={{
             background:
               "linear-gradient(180deg, rgba(20,0,40,0.65) 0%, rgba(3,0,15,0.8) 60%, rgba(0,0,0,0.85) 100%)",
@@ -340,6 +373,12 @@ export default function TradeHub() {
               Post Trade
             </button>
           </div>
+          {errorActive && (
+            <p className="text-red-400 font-semibold mt-3 text-center">
+              {errorMsg}
+            </p>
+          )}
+
         </div>
 
         {/* Dual Search Bars (Offering / Looking For) */}
